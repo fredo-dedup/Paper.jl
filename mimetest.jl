@@ -52,6 +52,7 @@ show(io, t::T1) = display()
 
 	mds
 
+	import Base.writemime
 	function writemime(io::IO, ::MIME"text/plain", x)
 		println(io, "I was here")
 		Base.showlimited(io, x)
@@ -61,6 +62,9 @@ show(io, t::T1) = display()
 	456.4
 	"abcde"
 	[4.,456]
+
+	methods(writemime, (IO, MIME"text/plain", Markdown.MD))
+
 
 	println(mds)
 	methods(mimewritable)
@@ -123,8 +127,6 @@ Base.Multimedia.displays
     write(pap, "ceci est une ligne\n")
 	println(pap, "et une autre ligne")
 	close(pap)
-
-
 
 	function writemime(io::IO, ::MIME"text/plain", x)
 		println(pap, x)
