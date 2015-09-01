@@ -68,7 +68,7 @@
     end
 
     rewire(Compose.Context) do c
-        addtochunk(convert(Tile, m))
+        addtochunk(convert(Tile, c))
     end
 
     

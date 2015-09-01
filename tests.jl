@@ -1,58 +1,48 @@
-################### escher.jl  ###################
+############### Paper tests  ###################
 
 	cd("p:/documents/julia/paper")
-	include("testserve2.jl")
-	@async MyServer.launch(5573)
+	include("src/Paper.jl")
 
-	# @spawn begin
-	# 	include("testserve2.jl")
-	# 	MyServer.launch(5560)
-	# end
+	tid = Paper.launch()
 
-	5+6
+	# t = @async run(server, 3000)
+	# ...
+	# ex = InterruptException()
+	# Base.throwto(t, ex)
+	# close(http.sock) # ideally HttpServer would catch exception to cleanup
+
+	
+	Paper.chunk(:start)
 	"abcd"
+	5+6
 
 
+	mf(x) = x*exp(-x*x)
+	mf(4.5)
 
-
-	MyServer.chunk(:start)
-	MyServer.chunk(:start)
-	MyServer.chunk(:23)
-	MyServer.chunk(:end)
-	MyServer.current, MyServer.torder
-
-	using Escher
-
-	MyServer.addtotile(vbox("end, end"))
-
-
-	MyServer.addtotile(vbox("encadré") |> color("#f00"))
-	MyServer.addtotile(vbox("encadré") |> border(solid, 1em, "#f00"))
-	MyServer.addtotile(vbox("encadré") |> borderwidth(1px) |> bordercolor("#f00") |> borderstyle(solid))
-
-
-
-	MyServer.addtotile(vbox("abcd"))
-
-
-	import Base.Multimedia.writemime
-
-	methods(writemime, (IO, MIME"text/plain", Float64))
-
-############ markdown   ####################
-
-	function writemime(io::IO, ::MIME"text/plain", md::Markdown.MD)
-		MyServer.addtotile(md)
-		Markdown.plain(io, md)
-	end
+	a = "abcd" |> Paper.fontweight(700)
 
 	using Markdown
 
-	md"""
-	- test
+md"""
+	 - el 1
+	 - el 2
 
-	ceci est du *markdown*
-	"""
+# titre h1
+
+	 $e^2$
+"""
+
+
+	fm = Paper.tex("e^2")
+
+	Escher.slider(0:10)
+
+
+	"rouge"   |> Paper.fontcolor("#f00")
+	"encadré" |> Paper.border(Paper.solid, 1Paper.em, "#f00")
+	"encadré" |> Paper.borderwidth(1Paper.px) |> Paper.bordercolor("#f00") |> Paper.borderstyle(Paper.solid)
+
 
 ############  compose  ######################
 
@@ -70,33 +60,25 @@
 	    end
 	end
 
-	compose(sierpinski(5), linewidth(0.1mm), fill(nothing), stroke("black"))
+	compose(sierpinski(3), linewidth(0.3mm), fill(nothing), stroke("#4e4"))
 
+############  gadfly  ######################
 
 	using Gadfly
 
 	pl = plot(x=rand(10), y=rand(10), Geom.point, Geom.line)
 
-	typeof(pl)
+	Paper.rewire(Gadfly.Plot) do p
+		Paper.addtochunk(convert(Paper.Tile, p))
+	end
 
-	MyServer.addtotile(pl |> borderwidth(1px) |> bordercolor("#f00") |> borderstyle(solid))
-	MyServer.addtotile(pl |> shrink(2.))
-
-
-	methods(writemime, (IO, MIME"text/plain", typeof(pl)))
-
-	md"# chapter 45"
-	h1("Chapter 45")
-
-img = SVG("sierpinski.svg", 4inch, 4(sqrt(3)/2)inch)
-draw(img, compose(sierpinski(8), linewidth(0.1mm), fill(nothing), stroke("black")))
+	pl |> Paper.caption("ceci est un beau graphe")
 
 
+	Paper.vbox(pl, Paper.caption("ceci est un beau graphe")) |> Paper.packacross(Paper.center)
 
-	5+6
-	"abcd";
 
-	Escher.bestmime(456)
+############ Arrays  #######################
 
 	A = [456 465 ; 4  46]
 	Escher.bestmime(A)
@@ -107,34 +89,6 @@ draw(img, compose(sierpinski(8), linewidth(0.1mm), fill(nothing), stroke("black"
 	methods(writemime, (IO, MIME"text/plain", Any))
 
 	Escher.table
-
-	MyServer.@eval(begin 
-		MyServer.mytiles = Escher.vbox("abcd")
-		println(mytiles)
-	end)
-
-	MyServer.@eval mytiles
-	eval(MyServer, :mytiles)
-	MyServer.eval(:( mytiles = vbox(hbox("abcd", "et ta soeur")) ) )
-	MyServer.eval(:( notify(updated) ) )
-
-
-	MyServer.eval(:( mytiles = vbox("burp", "...", "hello" ) )) 
-	MyServer.eval(:( notify(updated) ) )
-
-
-
-	mytiles = nothing
-
-	MyServer.mytiles
-
-	MyServer.@eval quote
-		push!(updated, "")
-	end
-
-
-
-############## mime types  ###################
 
 	
 
