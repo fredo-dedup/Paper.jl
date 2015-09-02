@@ -13,6 +13,16 @@ Paper.launch()
 
 Paper.chunk(:start)
 Paper.title(3, "M-Splines")
+Paper.chunk(:next)
+Paper.title(3, "M-Splines")
+
+
+"abcd" |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
+
+Paper.chunk(:bottom)
+"text"
+
+
 
 function mspline(i, k, ts, x)
 	if k == 1
@@ -75,3 +85,10 @@ vbox(pl,
 	borderstyle(solid)
 
 5+6
+
+"aze"
+"xyz"
+
+include("examples/mini.jl")
+
+

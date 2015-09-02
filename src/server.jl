@@ -118,7 +118,7 @@ uisocket() = (req) -> begin
     h = @compat parse(Int, d["h"])
 
     sock = req[:socket]
-    tilestream = Input{Signal}(Input{Tile}(empty))
+    tilestream = Input{Signal}(Input{Tile}(build()))
 
     # TODO: Initialize window with session,
     # window dimensions and what not
@@ -127,26 +127,24 @@ uisocket() = (req) -> begin
 
     # import by default
     write(sock, JSON.json(import_cmd("tex")))
-
-
     lift(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
 
-    current = Escher.empty
+    newstream = nothing
     try
-        current = vbox("Starting up...")
+        newstream = build()
     catch err
         bt = backtrace()
-        current = Elem(:pre, sprint() do io
+        newstream = Elem(:pre, sprint() do io
             showerror(io, err)
             Base.show_backtrace(io, bt)
         end)
     end
-
-    swap!(tilestream, current)
+    swap!(tilestream, newstream)
 
     start_updates(flatten(tilestream, typ=Any), window, sock, "root")
 
+    # client commands processing ?
     @async while isopen(sock)
         data = read(sock)
 
@@ -160,45 +158,37 @@ uisocket() = (req) -> begin
 
     while isopen(sock)
         wait(updated)
-        sleep(0.05)  # necessary ?
-
-        next = Tile[]
-        for index in torder
-            els = length(plan[index]) == 0 ? Escher.empty : vbox(plan[index]...)
-            push!(next, els |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(solid) )
-        end
-        # next = mytiles
-        swap!(tilestream, vbox(next...))
+        swap!(tilestream, build())
     end
 end
 
-function launch(port_hint=5555)
-    # App
-    @app static = (
-        Mux.defaults,
-        route("assets", Mux.files(Pkg.dir("Escher", "assets")), Mux.notfound()),
-        route("/", req -> setup_socket()),
-        Mux.notfound(),
-    )
+# function launch(port_hint=5555)
+#     # App
+#     @app static = (
+#         Mux.defaults,
+#         route("assets", Mux.files(Pkg.dir("Escher", "assets")), Mux.notfound()),
+#         route("/", req -> setup_socket()),
+#         Mux.notfound(),
+#     )
 
-    @app comm = (
-        Mux.wdefaults,
-        route("/socket/$thisStream", uisocket()),
-        Mux.wclose,
-        Mux.notfound(),
-    )
+#     @app comm = (
+#         Mux.wdefaults,
+#         route("/socket/$thisStream", uisocket()),
+#         Mux.wclose,
+#         Mux.notfound(),
+#     )
 
-    port, sock = listenany(port_hint)  #find open port
-    close(sock)
+#     port, sock = listenany(port_hint)  #find open port
+#     close(sock)
 
-    tid = @async serve(static, comm, port)
+#     tid = @async serve(static, comm, port)
 
-    fulladdr = "http://127.0.0.1:$port"
-    @linux_only   run(`xdg-open $fulladdr`)
-    @osx_only     run(`open $fulladdr`)
-    @windows_only run(`cmd /c start $fulladdr`)
+#     fulladdr = "http://127.0.0.1:$port"
+#     @linux_only   run(`xdg-open $fulladdr`)
+#     @osx_only     run(`open $fulladdr`)
+#     @windows_only run(`cmd /c start $fulladdr`)
 
-    tid
-end
+#     tid
+# end
 
 

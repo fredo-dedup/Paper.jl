@@ -3,6 +3,8 @@
 	cd("p:/documents/julia/paper")
 	include("src/Paper.jl")
 
+	reload("Paper")
+
 	tid = Paper.launch()
 
 	# t = @async run(server, 3000)
