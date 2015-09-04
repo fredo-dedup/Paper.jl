@@ -13,6 +13,8 @@ reload("Paper")
 Paper.init()
 Paper.reset()
 
+Paper.plan |> keys |> collect
+
 ###############################
 
 Paper.chunk(:start)
@@ -20,7 +22,7 @@ title(3, "Himmelblau's function")
 
 Paper.chunk(:desc)
 title(1, "Definition")
-tex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2") |> pad(1em)
+tex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2") |> vbox |> packacross(center)
 
 Paper.chunk(:plot)
 title(1, "Contour Plot")
