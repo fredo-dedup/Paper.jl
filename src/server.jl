@@ -13,7 +13,7 @@ psocket() = (req) -> begin
     h = @compat parse(Int, d["h"])
 
     sock = req[:socket]
-    tilestream = Input{Signal}(Input{Tile}(build()))
+    tilestream = Input{Signal}(Input{Tile}(empty))
 
     # TODO: Initialize window with session,
     # window dimensions and what not
@@ -81,7 +81,7 @@ function build()
 
             next[i] = els
         end
-        return vbox(next...) |> global_style
+        return foldl(|>, vbox(next...), global_style)
     end
 end
 

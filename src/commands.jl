@@ -6,7 +6,7 @@ function reset()
     plan    = Dict{Any, Vector{Tile}}()
     torder  = Any[]
     current = 0
-    chunk_style = Dict{Any, Vector{Tile}}()
+    chunk_style = Dict()
     notify(updated) 
 end
 
@@ -41,7 +41,7 @@ macro chunk(index, args...)
         try
             push!(chunk_style[index], eval(a))
         catch e
-            warning("can't evaluate $a")
+            warn("can't evaluate $a, error $e")
         end
     end
 

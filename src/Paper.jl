@@ -27,10 +27,10 @@ module Paper
     serverid = nothing      # server Task
 
     plan        = Dict{Any, Vector{Tile}}()
-    chunk_style = Dict{Any, Vector{Tile}}() 
+    chunk_style = Dict() 
     torder  = Any[]
     current = 0
-    global_style = Vector{Tile}[ pad(0.5em) ]
+    global_style = Any[]
 
     include("server.jl")
     include("commands.jl")
