@@ -1,28 +1,67 @@
 ############ user commands ##################
 
-    function chunk(index, pos=0)
-        global plan, current, torder
+function reset()
+    global plan, torder, current
 
-        if length(torder)==0
+    plan    = Dict{Any, Vector{Tile}}()
+    torder  = Any[]
+    current = 0
+    chunk_style = Dict{Any, Vector{Tile}}()
+    notify(updated) 
+end
+
+function chunk(index, pos=0)
+    global plan, current, torder
+
+    if length(torder)==0
+        push!(torder, index)
+    elseif !haskey(plan, index) # new index
+        if pos in 1:length(torder)
+            insert!(torder, pos, index)
+        else
             push!(torder, index)
-        elseif !haskey(plan, index) # new index
-            if pos in 1:length(torder)
-                insert!(torder, pos, index)
-            else
-                push!(torder, index)
-            end
         end
-        current = index
-        plan[index] = Tile[]
-        notify(updated)
+    end
+    current = index
+    plan[index] = Tile[]
+    notify(updated)
+end
+
+function addtochunk(t::Tile)
+    length(torder)==0 && return
+    push!(plan[current], t)
+    notify(updated) 
+end
+
+macro chunk(index, args...)
+    global chunk_style
+
+    haskey(chunk_style, index) || ( chunk_style[index]=Any[] ) 
+    for a in args
+        try
+            push!(chunk_style[index], eval(a))
+        catch e
+            warning("can't evaluate $a")
+        end
     end
 
-    function addtochunk(t::Tile)
-        length(torder)==0 && return
-        push!(plan[current], t)
-        notify(updated) 
+    chunk(index)
+end
+
+macro init(args...)
+    global global_style
+
+    global_style = Any[] 
+    for a in args
+        try
+            push!(global_style, eval(a))
+        catch e
+            warning("can't evaluate $a")
+        end
     end
 
+    init()
+end
 
 ########### writemime rewiring #################
 
