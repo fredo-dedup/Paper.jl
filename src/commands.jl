@@ -33,6 +33,17 @@ function addtochunk(t::Tile)
     notify(updated) 
 end
 
+function stationary(f::Function, signals::Signal...)
+    st = lift(f, signals...)
+    addtochunk(empty)
+    pos1 = current
+    pos2 = length(plan[current]) 
+    lift(st) do nt
+        plan[pos1][pos2] = nt
+        notify(updated)
+    end
+end
+
 macro chunk(index, args...)
     global chunk_style
 
@@ -110,50 +121,6 @@ end
         addtochunk(convert(Tile, c))
     end
 
-
-
-
-    # rewire(TT) do v
-    #     println("he ho !")
-    # end
-
-    # TT(1)
-    # methods(rewire, (MIME"text/plain"(), TT, Function))
-    # type TT2
-    #     x
-    # end
-    # a = TT2(3)
-    # mm = methods(writemime, (IO, MIME, TT2))[1]
-    # a
-    # myfunc(a)
-    # myfunc(x) = println("x: $(x.x)")
-    # rewire(MIME"text/plain", TT2, myfunc)
-    # TT(1)
-    # meth = methods(writemime, (IO, MIME"text/plain", TT))[1].func
-    # TT(1)
-    # rewire(MIME"text/plain", Int64, sin)
-    # MIME"text/plain" <: MIME
-    # typeof(MIME"text/plain"())
-    # res = methods(writemime, (IO, MIME"text/plain", Int64))
-    # eltype(res)
-    # typeof(res[1])
-    # typeof(res[1].func)
-    # res[1].func
-    # MIME
-    # isa(Int64, Type)
-    # isa(MIME"text/plain", MIME)
-    # isa(MIME"text/plain"(), MIME)
-    # isa(MIME"text/plain", Type{MIME})
-    # typeof(MIME"text/plain"())
-    # @rewire MIME"text/plain" abcd
-    # @rewire Int64 abcd
-    # macro www2(x::MIME)
-    #     println(typeof(x))    
-    # end
-    # @www MIME"text/plain"
-    # @www x -> addtochunk(x)
-    # @www2 MIME"text/plain"
-    # @www Any
 
 
 

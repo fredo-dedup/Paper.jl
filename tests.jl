@@ -1,23 +1,33 @@
 ############### Paper tests  ###################
 
-	cd("p:/documents/julia/paper")
-	include("src/Paper.jl")
+	include(joinpath(Pkg.dir("Paper"), "src/Paper.jl"))
 
-	reload("Paper")
+############### Paper tests  ###################
+	Paper.init()
 
-	tid = Paper.launch()
+	Paper.@chunk header
+	Paper.title(1, "tx initial Terms")
 
-	# t = @async run(server, 3000)
-	# ...
-	# ex = InterruptException()
-	# Base.throwto(t, ex)
-	# close(http.sock) # ideally HttpServer would catch exception to cleanup
-
-	
-	Paper.chunk(:start)
-	"abcd"
 	5+6
 
+	Paper.@chunk latex
+	using Reactive
+
+	texᵗ = Input("f(x) = \\int_{-\\infty}^\\infty
+	           \\hat f(\\xi)\\,e^{2 \\pi i \\xi x}
+	           \\,d\\xi")
+	modeᵗ = Input(false)
+
+	using Escher
+
+	lift(texᵗ, modeᵗ) do t, mode
+        Paper.vbox(Paper.h1("LaTeX"),
+             Paper.hbox("LaTeX support is via ", Paper.hskip(1Paper.em), Paper.tex("\\KaTeX")),
+             Paper.textinput() >>> texᵗ,
+             Paper.hbox("Show as a block", Paper.hskip(1Paper.em), Paper.checkbox(mode) >>> modeᵗ),
+             Paper.vskip(1Paper.em),
+             Paper.tex(t, block=mode)) |> Paper.pad(1Paper.em) |> Paper.maxwidth(30Paper.em)
+    end
 
 	mf(x) = x*exp(-x*x)
 	mf(4.5)
@@ -36,6 +46,8 @@ md"""
 """
 
 
+
+
 	fm = Paper.tex("e^2")
 
 	Escher.slider(0:10)
@@ -45,6 +57,36 @@ md"""
 	"encadré" |> Paper.border(Paper.solid, 1Paper.em, "#f00")
 	"encadré" |> Paper.borderwidth(1Paper.px) |> Paper.bordercolor("#f00") |> Paper.borderstyle(Paper.solid)
 
+
+@chunk testtest vbox packacross(center)
+
+@chunk testtest vbox packacross(center)
+
+
+
+t₀=12
+notify(Paper.updated)
+"text text"
+t₁
+t¹	
+
+4 ∈ [5:10]
+
+
+t
+\u000a1	
+
+5+6
+
+reset()
+
+@chunk testtest
+
+5+6
+
+@chunk desc
+
+@init
 
 ############  compose  ######################
 
