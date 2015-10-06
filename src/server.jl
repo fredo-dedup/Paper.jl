@@ -93,7 +93,7 @@ function init(port_hint=5555)
 
     if active
         # should stop running tasks FIXME (doesn't work)
-        close(sock) 
+        # close(sock) 
 
         # should stop the server (doesn't work)
         # Base.throwto(serverid, InterruptException())
@@ -115,8 +115,10 @@ function init(port_hint=5555)
     )
 
     #find open port
-    port, sock = listenany(port_hint) ; close(sock)
+    # port, sock = listenany(port_hint) ; close(sock)
+    # serverid = @async serve(static, comm, port)
 
+    port = port_hint
     serverid = @async serve(static, comm, port)
 
     if !active  # open browser only if init called from inactive state

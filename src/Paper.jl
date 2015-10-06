@@ -1,9 +1,13 @@
 # TODO :
 #  - issue : check if server already running, if yes reset
 #  - issue : multiple evaluation returning only last value
-#  - new : force browser focus on bottom of current
-#  - new : commands to load Escher assets
-#  - alt : catch writemime calls, as if in debugging mode
+#  - add : force browser focus on bottom of current
+#  - add : commands to load Escher assets
+#  - alt : catch writemime calls, as if in debugging mode ? and use Signals...
+#  - alt : lookup watch_io in stdio.jl
+#  - add : Matplotlib Tiles
+
+__precompile__(false)
 
 module Paper
 
@@ -17,7 +21,7 @@ module Paper
     @reexport using Reactive
     using Patchwork
 
-    using Markdown
+    # using Markdown
     import Compose
     # using Gadfly
 
