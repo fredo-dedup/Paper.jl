@@ -1,11 +1,12 @@
 # TODO :
-#  - issue : check if server already running, if yes reset
-#  - issue : multiple evaluation returning only last value
-#  - add : force browser focus on bottom of current
-#  - add : commands to load Escher assets
-#  - alt : catch writemime calls, as if in debugging mode ? and use Signals...
-#  - alt : lookup watch_io in stdio.jl
-#  - add : Matplotlib Tiles
+# issue : check if server already running, if yes reset
+# issue : multiple evaluation returning only last value
+# add : force browser focus on bottom of current
+# add : commands to load Escher assets
+# alt : catch writemime calls, as if in debugging mode ? and use Signals...
+# alt : lookup watch_io in stdio.jl
+# add : Matplotlib Tiles
+# alt : Traits pour capter appels à writemime
 
 __precompile__(false)
 
@@ -30,7 +31,7 @@ module Paper
     sock     = nothing      # communication socket with server
     serverid = nothing      # server Task
 
-    plan        = Dict{Any, Vector{Tile}}()
+    plan        = Dict()
     chunk_style = Dict() 
     torder  = Any[]
     current = 0

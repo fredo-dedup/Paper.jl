@@ -3,7 +3,7 @@
 function reset()
     global plan, torder, current
 
-    plan    = Dict{Any, Vector{Tile}}()
+    plan    = Dict{Any, TileList}()
     torder  = Any[]
     current = 0
     chunk_style = Dict()
@@ -23,11 +23,11 @@ function chunk(index, pos=0)
         end
     end
     current = index
-    plan[index] = Tile[]
+    plan[index] = []
     notify(updated)
 end
 
-function addtochunk(t::Tile)
+function addtochunk(t)
     length(torder)==0 && return
     push!(plan[current], t)
     notify(updated) 
@@ -59,20 +59,20 @@ macro chunk(index, args...)
     chunk(index)
 end
 
-macro init(args...)
-    global global_style
+# macro init(args...)
+#     global global_style
 
-    global_style = Any[] 
-    for a in args
-        try
-            push!(global_style, eval(a))
-        catch e
-            warning("can't evaluate $a")
-        end
-    end
+#     global_style = Any[] 
+#     for a in args
+#         try
+#             push!(global_style, eval(a))
+#         catch e
+#             warning("can't evaluate $a")
+#         end
+#     end
 
-    init()
-end
+#     init()
+# end
 
 ########### writemime rewiring #################
 
@@ -99,27 +99,33 @@ end
     end
 
     rewire(func::Function, t::Type) = rewire(func, MIME"text/plain", t)
+    rewire(t::Type)                 = rewire(addtochunk, MIME"text/plain", t)
 
+    rewire(String)
+    rewire(Number)
+    rewire(Markdown.MD)
+    rewire(Tile)
+    rewire(Compose.Context)
 
-    rewire(String) do s
-        addtochunk(convert(Tile, s))
-    end
+    # rewire(String) do s
+    #     addtochunk(convert(Tile, s))
+    # end
 
-    rewire(Number) do x
-        addtochunk(convert(Tile, string(x)))
-    end
+    # rewire(Number) do x
+    #     addtochunk(convert(Tile, string(x)))
+    # end
 
-    rewire(Markdown.MD) do m
-        addtochunk(convert(Tile, m))
-    end
+    # rewire(Markdown.MD) do m
+    #     addtochunk(convert(Tile, m))
+    # end
 
-    rewire(Tile) do t
-        addtochunk(t)
-    end
+    # rewire(Tile) do t
+    #     addtochunk(t)
+    # end
 
-    rewire(Compose.Context) do c
-        addtochunk(convert(Tile, c))
-    end
+    # rewire(Compose.Context) do c
+    #     addtochunk(c)
+    # end
 
 
 

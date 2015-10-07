@@ -73,7 +73,7 @@ function build()
             if length(plan[index]) == 0
                 els = vbox(vskip(0.5em))
             else
-                els = vbox(plan[index]...)
+                els = vbox(plan[index])
             end
             els = foldl(|>, els, chunk_style[index])
 
@@ -91,6 +91,8 @@ end
 function init(port_hint=5555)
     global sock, serverid, active
 
+    println("init")
+
     if active
         # should stop running tasks FIXME (doesn't work)
         # close(sock) 
@@ -102,6 +104,8 @@ function init(port_hint=5555)
     # App
     @app static = (
         Mux.defaults,
+        route("pkg/:pkg", packagefiles("assets"), Mux.notfound()),
+        # route("assets", Mux.files(dir), Mux.notfound()),
         route("assets", Mux.files(Pkg.dir("Escher", "assets")), Mux.notfound()),
         route("/", req -> setup_socket("Paper")),
         Mux.notfound(),
@@ -114,11 +118,25 @@ function init(port_hint=5555)
         Mux.notfound(),
     )
 
-    #find open port
-    # port, sock = listenany(port_hint) ; close(sock)
-    # serverid = @async serve(static, comm, port)
+    # @app static = (
+    #     Mux.defaults,
+    #     route("pkg/:pkg", packagefiles("assets"), Mux.notfound()),
+    #     route("assets", Mux.files(dir), Mux.notfound()),
+    #     route("/:file", req -> setup_socket(req[:params][:file])),
+    #     route("/", req -> setup_socket("index.jl")),
+    #     Mux.notfound(),
+    # )
 
-    port = port_hint
+    # @app comm = (
+    #     Mux.wdefaults,
+    #     route("/socket/:file", uisocket(dir)),
+    #     Mux.wclose,
+    #     Mux.notfound(),
+    # )
+
+
+    #find open port
+    port, sock = listenany(port_hint) ; close(sock)
     serverid = @async serve(static, comm, port)
 
     if !active  # open browser only if init called from inactive state
