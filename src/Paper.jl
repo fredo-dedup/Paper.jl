@@ -38,7 +38,7 @@ module Paper
         chunknames::Vector{Symbol}
         chunkstyles::Vector
     end
-    Session() = Session(nothing, [], Symbol[], [])
+    Session() = Session([], [], Symbol[], [])
 
     sessions = Dict{Symbol, Session}()
 

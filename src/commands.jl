@@ -1,83 +1,62 @@
 ############ user commands ##################
 
-# function reset()
-#     global plan, torder, current
-
-#     plan    = Dict()
-#     torder  = Any[]
-#     current = 0
-#     chunk_style = Dict()
-#     notify(updated) 
-# end
-
-
 function chunk(name, pos=0)
-    global plan, current, torder
+    global currentChunk
 
     currentSession==nothing && error("No active session yet")
 
-    
-
-    if length(torder)==0
-        push!(torder, index)
-    elseif !haskey(plan, index) # new index
-        if pos in 1:length(torder)
-            insert!(torder, pos, index)
-        else
-            push!(torder, index)
-        end
+    if name in currentSession.chunknames # replace existing chunk
+        index = indexin([name], currentSession.chunknames)[1]
+        currentSession.chunks[index] = []
+        currentSession.chunkstyles[index] = []
+        currentChunk = currentSession.chunks[index]
+    else
+        push!(currentSession.chunknames, name)
+        push!(currentSession.chunks,       [])    
+        push!(currentSession.chunkstyles,  [])    
+        currentChunk = currentSession.chunks[end]
     end
-    current = index
-    plan[index] = []
+
     notify(updated)
 end
 
-
-function chunk(index, pos=0)
-    global plan, current, torder
-
-    if length(torder)==0
-        push!(torder, index)
-    elseif !haskey(plan, index) # new index
-        if pos in 1:length(torder)
-            insert!(torder, pos, index)
-        else
-            push!(torder, index)
-        end
-    end
-    current = index
-    plan[index] = []
-    notify(updated)
+macro chunk(args...)
+    chunk(args[1])
 end
+# macro chunk(index, args...)
+#     global chunk_style
 
-macro chunk(index, args...)
-    global chunk_style
+#     haskey(chunk_style, index) || ( chunk_style[index]=Any[] ) 
+#     for a in args
+#         try
+#             push!(chunk_style[index], eval(a))
+#         catch e
+#             warn("can't evaluate $a, error $e")
+#         end
+#     end
 
-    haskey(chunk_style, index) || ( chunk_style[index]=Any[] ) 
-    for a in args
-        try
-            push!(chunk_style[index], eval(a))
-        catch e
-            warn("can't evaluate $a, error $e")
-        end
-    end
-
-    chunk(index)
-end
+#     chunk(index)
+# end
 
 function addtochunk(t)
-    length(torder)==0 && return
-    push!(plan[current], t)
+    if currentSession==nothing
+        println("No active session yet")
+        return
+    elseif currentChunk==nothing
+        println("No active chunk yet, run @chunk")
+        return
+    end
+    push!(currentChunk, t)
     notify(updated) 
 end
 
 function stationary(f::Function, signals::Signal...)
     st = lift(f, signals...)
     addtochunk(empty)
-    pos1 = current
-    pos2 = length(plan[current]) 
+    ch   = currentChunk
+    slot = length(plan[current]) 
     lift(st) do nt
-        plan[pos1][pos2] = nt
+        ch[slot] = nt
         notify(updated)
     end
 end
@@ -110,8 +89,8 @@ end
     rewire(func::Function, t::Type) = rewire(func, MIME"text/plain", t)
     rewire(t::Type)                 = rewire(addtochunk, MIME"text/plain", t)
 
-    rewire(String)
-    rewire(Number)
-    rewire(Markdown.MD)
-    rewire(Tile)
-    rewire(Compose.Context)
+    # rewire(String)
+    # rewire(Number)
+    # rewire(Markdown.MD)
+    # rewire(Tile)
+    # rewire(Compose.Context)
