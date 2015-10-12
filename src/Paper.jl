@@ -12,30 +12,41 @@ __precompile__(false)
 
 module Paper
 
-    using Reexport
-    @reexport using Escher
-
     using Compat
+    using Reexport
+    
+    using Requires
     using Mux
     using JSON
 
-    @reexport using Reactive
     using Patchwork
+    @reexport using Reactive
+    @reexport using Escher
 
-    # using Markdown
     import Compose
-    # using Gadfly
 
     updated  = Condition()  # doc updated signal
     active   = false        # server active ?
     sock     = nothing      # communication socket with server
     serverid = nothing      # server Task
+    currentSession = nothing
+    currentChunk   = nothing
 
-    plan        = Dict()
-    chunk_style = Dict() 
-    torder  = Any[]
-    current = 0
-    global_style = Any[]
+    type Session
+        style
+        chunks::Vector
+        chunknames::Vector{Symbol}
+        chunkstyles::Vector
+    end
+    Session() = Session(nothing, [], Symbol[], [])
+
+    sessions = Dict{Symbol, Session}()
+
+    # plan        = Dict()
+    # chunk_style = Dict() 
+    # torder  = Any[]
+    # current = 0
+    # global_style = Any[]
 
     include("server.jl")
     include("commands.jl")

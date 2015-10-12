@@ -6,7 +6,9 @@
 include(Pkg.dir("Escher", "src", "cli", "serve.jl"))
 
 ### specific socket definition for Paper's purpose
-psocket() = (req) -> begin
+function uisocket(req)
+    session = req[:params][:session]
+
     d = query_dict(req[:query])
 
     w = @compat parse(Int, d["w"])
@@ -27,9 +29,9 @@ psocket() = (req) -> begin
     lift(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
 
-    newstream = nothing
+    newstream = Escher.empty
     try
-        newstream = build()
+        newstream = build(session)
     catch err
         bt = backtrace()
         newstream = Elem(:pre, sprint() do io
@@ -55,27 +57,36 @@ psocket() = (req) -> begin
 
     while isopen(sock)
         wait(updated)
-        swap!(tilestream, build())
+        newstream = try
+                        build(session)
+                    catch err
+                        bt = backtrace()
+                        Elem(:pre, sprint() do io
+                            showerror(io, err)
+                            Base.show_backtrace(io, bt)
+                        end)
+                    end
+        swap!(tilestream, newstream())
     end
 end
 
 ### builds the Escher page structure
-function build()
-    nbel = length(torder)
+function build(session::Session)
+    nbel = length(session.chunks)
     if nbel==0 
         return foldl(|>, 
                      title(1,"Ready...") |> borderwidth(1px) |> 
                      bordercolor("#444") |> borderstyle(dashed),
-                     global_style)
+                     session.style)
     else
-        next = Array(Tile, length(torder))
-        for (i,index) in enumerate(torder)
-            if length(plan[index]) == 0
+        next = Array(Tile, length(session.chunknames))
+        for (i,index) in enumerate(session.chunknames)
+            if length(session.chunks[index]) == 0
                 els = vbox(vskip(0.5em))
             else
-                els = vbox(plan[index])
+                els = vbox(session.chunks[index])
             end
-            els = foldl(|>, els, chunk_style[index])
+            els = foldl(|>, els, session.chunkstyles[index])
 
             if index==current
                 els = els |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
@@ -83,7 +94,7 @@ function build()
 
             next[i] = els
         end
-        return foldl(|>, vbox(next...), global_style)
+        return foldl(|>, vbox(next...), session.style)
     end
     empty
 end
@@ -94,60 +105,48 @@ function init(port_hint=5555)
 
     println("init")
 
-    if active
-        # should stop running tasks FIXME (doesn't work)
-        # close(sock) 
-
-        # should stop the server (doesn't work)
-        # Base.throwto(serverid, InterruptException())
-    end
-
     # App
     @app static = (
         Mux.defaults,
         route("pkg/:pkg", packagefiles("assets"), Mux.notfound()),
-        # route("assets", Mux.files(dir), Mux.notfound()),
         route("assets", Mux.files(Pkg.dir("Escher", "assets")), Mux.notfound()),
+        route("/:session", req -> setup_socket(req[:params][:session]) ),
         route("/", req -> setup_socket("Paper")),
         Mux.notfound(),
     )
 
     @app comm = (
         Mux.wdefaults,
-        route("/socket/Paper", psocket()),
+        route("/socket/:session", uisocket),
         Mux.wclose,
         Mux.notfound(),
     )
-
-    # @app static = (
-    #     Mux.defaults,
-    #     route("pkg/:pkg", packagefiles("assets"), Mux.notfound()),
-    #     route("assets", Mux.files(dir), Mux.notfound()),
-    #     route("/:file", req -> setup_socket(req[:params][:file])),
-    #     route("/", req -> setup_socket("index.jl")),
-    #     Mux.notfound(),
-    # )
-
-    # @app comm = (
-    #     Mux.wdefaults,
-    #     route("/socket/:file", uisocket(dir)),
-    #     Mux.wclose,
-    #     Mux.notfound(),
-    # )
-
 
     #find open port
     port, sock = listenany(port_hint) ; close(sock)
     serverid = @async serve(static, comm, port)
 
-    if !active  # open browser only if init called from inactive state
-        fulladdr = "http://127.0.0.1:$port"
-        @linux_only   run(`xdg-open $fulladdr`)
-        @osx_only     run(`open $fulladdr`)
-        @windows_only run(`cmd /c start $fulladdr`)
-    end
-
     active = true
 end
 
 
+macro restart_server()
+end
+
+macro session(name::Symbol==gensym("session"))
+    global currentSession
+
+    haskey(sessions, name) && error("There is already a session '$name'")
+
+    sessions[name] = Session()
+    currentSession = name
+    currentChunk   = nothing
+    
+    fulladdr = "http://127.0.0.1:$port/$name"
+    @linux_only   run(`xdg-open $fulladdr`)
+    @osx_only     run(`open $fulladdr`)
+    @windows_only run(`cmd /c start $fulladdr`)
+end
+
+macro close_session(name::Symbol==currentSession)
+end

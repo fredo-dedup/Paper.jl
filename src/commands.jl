@@ -1,14 +1,37 @@
 ############ user commands ##################
 
-function reset()
-    global plan, torder, current
+# function reset()
+#     global plan, torder, current
 
-    plan    = Dict()
-    torder  = Any[]
-    current = 0
-    chunk_style = Dict()
-    notify(updated) 
+#     plan    = Dict()
+#     torder  = Any[]
+#     current = 0
+#     chunk_style = Dict()
+#     notify(updated) 
+# end
+
+
+function chunk(name, pos=0)
+    global plan, current, torder
+
+    currentSession==nothing && error("No active session yet")
+
+    
+
+    if length(torder)==0
+        push!(torder, index)
+    elseif !haskey(plan, index) # new index
+        if pos in 1:length(torder)
+            insert!(torder, pos, index)
+        else
+            push!(torder, index)
+        end
+    end
+    current = index
+    plan[index] = []
+    notify(updated)
 end
+
 
 function chunk(index, pos=0)
     global plan, current, torder
@@ -25,6 +48,21 @@ function chunk(index, pos=0)
     current = index
     plan[index] = []
     notify(updated)
+end
+
+macro chunk(index, args...)
+    global chunk_style
+
+    haskey(chunk_style, index) || ( chunk_style[index]=Any[] ) 
+    for a in args
+        try
+            push!(chunk_style[index], eval(a))
+        catch e
+            warn("can't evaluate $a, error $e")
+        end
+    end
+
+    chunk(index)
 end
 
 function addtochunk(t)
@@ -44,35 +82,6 @@ function stationary(f::Function, signals::Signal...)
     end
 end
 
-macro chunk(index, args...)
-    global chunk_style
-
-    haskey(chunk_style, index) || ( chunk_style[index]=Any[] ) 
-    for a in args
-        try
-            push!(chunk_style[index], eval(a))
-        catch e
-            warn("can't evaluate $a, error $e")
-        end
-    end
-
-    chunk(index)
-end
-
-# macro init(args...)
-#     global global_style
-
-#     global_style = Any[] 
-#     for a in args
-#         try
-#             push!(global_style, eval(a))
-#         catch e
-#             warning("can't evaluate $a")
-#         end
-#     end
-
-#     init()
-# end
 
 ########### writemime rewiring #################
 
