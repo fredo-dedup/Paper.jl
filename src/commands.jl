@@ -3,7 +3,7 @@
 function reset()
     global plan, torder, current
 
-    plan    = Dict{Any, TileList}()
+    plan    = Dict()
     torder  = Any[]
     current = 0
     chunk_style = Dict()
@@ -106,27 +106,3 @@ end
     rewire(Markdown.MD)
     rewire(Tile)
     rewire(Compose.Context)
-
-    # rewire(String) do s
-    #     addtochunk(convert(Tile, s))
-    # end
-
-    # rewire(Number) do x
-    #     addtochunk(convert(Tile, string(x)))
-    # end
-
-    # rewire(Markdown.MD) do m
-    #     addtochunk(convert(Tile, m))
-    # end
-
-    # rewire(Tile) do t
-    #     addtochunk(t)
-    # end
-
-    # rewire(Compose.Context) do c
-    #     addtochunk(c)
-    # end
-
-
-
-

@@ -18,16 +18,6 @@
 	           \\,d\\xi")
 	modeᵗ = Input(false)
 
-	using Escher
-
-	lift(texᵗ, modeᵗ) do t, mode
-        Paper.vbox(Paper.h1("LaTeX"),
-             Paper.hbox("LaTeX support is via ", Paper.hskip(1Paper.em), Paper.tex("\\KaTeX")),
-             Paper.textinput() >>> texᵗ,
-             Paper.hbox("Show as a block", Paper.hskip(1Paper.em), Paper.checkbox(mode) >>> modeᵗ),
-             Paper.vskip(1Paper.em),
-             Paper.tex(t, block=mode)) |> Paper.pad(1Paper.em) |> Paper.maxwidth(30Paper.em)
-    end
 
 	mf(x) = x*exp(-x*x)
 	mf(4.5)

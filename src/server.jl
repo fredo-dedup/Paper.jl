@@ -85,6 +85,7 @@ function build()
         end
         return foldl(|>, vbox(next...), global_style)
     end
+    empty
 end
 
 ### initializes the server
