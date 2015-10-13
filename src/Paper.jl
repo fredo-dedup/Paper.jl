@@ -26,32 +26,28 @@ module Paper
     import Compose
 
     updated  = Condition()  # doc updated signal
-    active   = false        # server active ?
-    sock     = nothing      # communication socket with server
-    serverid = nothing      # server Task
-    currentSession = nothing
-    currentChunk   = nothing
+
+    serverid       = nothing      # server Task
+    currentSession = nothing      # active session
+    currentChunk   = nothing      # active chunk
 
     type Session
-        style
         chunks::Vector
         chunknames::Vector{Symbol}
         chunkstyles::Vector
+        style::Vector
     end
-    Session() = Session([], [], Symbol[], [])
+    Session()      = Session([], Symbol[], [],    [])
+    Session(style) = Session([], Symbol[], [], style)
 
     sessions = Dict{Symbol, Session}()
 
-    # plan        = Dict()
-    # chunk_style = Dict() 
-    # torder  = Any[]
-    # current = 0
-    # global_style = Any[]
-
     include("server.jl")
     include("commands.jl")
+    include("rewire.jl")
 
-    export init, chunk, reset, @chunk, @init
+    export @chunk, @session, @rewire
+    export stationary
 
 
 end

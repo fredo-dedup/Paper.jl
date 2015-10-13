@@ -8,7 +8,6 @@ include(Pkg.dir("Escher", "src", "cli", "serve.jl"))
 ### specific socket definition for Paper's purpose
 function uisocket(req)
     sn = req[:params][:session] # session name
-    println("session = $sn")
     session = sessions[symbol(sn)]
 
     d = query_dict(req[:query])
@@ -17,7 +16,6 @@ function uisocket(req)
     h = @compat parse(Int, d["h"])
 
     sock = req[:socket]
-    println("sock = $sock")
     tilestream = Input{Signal}(Input{Tile}(empty))
 
     # TODO: Initialize window with session,
@@ -32,19 +30,7 @@ function uisocket(req)
     lift(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
 
-    newstream = Escher.empty
-    try
-        newstream = build(session)
-    catch err
-        # bt = backtrace()
-        # str = sprint() do io
-        #     showerror(io, err)
-        #     Base.show_backtrace(io, bt)
-        # end
-        str = string(err)
-        newstream = Elem(:pre, str )
-        # println( str )
-    end
+    newstream = build(session)
     swap!(tilestream, newstream)
 
     start_updates(flatten(tilestream, typ=Any), window, sock, "root")
@@ -63,61 +49,57 @@ function uisocket(req)
 
     while isopen(sock)
         wait(updated)
-        newstream = try
-                        build(session)
-                    catch err
-                        # bt = backtrace()
-                        # str = sprint() do io
-                        #     showerror(io, err)
-                        #     Base.show_backtrace(io, bt)
-                        # end
-                        # println( str )
-                        str = string(err)
-                        Elem(:pre, str )
-                    end
-        swap!(tilestream, newstream())
+        newstream = build(session)
+        swap!(tilestream, newstream)
     end
 end
 
 ### builds the Escher page structure
 function build(session::Session)
-    # session = p.sessions[:lmno]
-    nbel = length(session.chunks)
-    println("build, nbel = $nbel")
-    if nbel==0 
-        # return foldl(|>, 
-        #              title(1,"Ready...") |> borderwidth(1px) |> 
-        #              bordercolor("#444") |> borderstyle(dashed),
-        #              session.style)
-        return title(1,"Ready...") |> borderwidth(1px) |> 
-                     bordercolor("#444") |> borderstyle(dashed)
-    end
-
-    next = Array(Tile, nbel)
-    # for (i,index) in enumerate(session.chunknames)
-    for i in 1:nbel
-        # println(i, "  ", index)
-        # idx = indexin([index])
-        if length(session.chunks[i]) == 0
-            els = vskip(0.5em)
-        else
-            els = vbox(session.chunks[i])
+    # session = p.sessions[:abcd]
+    try 
+        nbel = length(session.chunks)
+        # println("build, nbel = $nbel")
+        if nbel==0 
+            return foldl(|>, 
+                         title(1,"Ready...") |> borderwidth(1px) |> 
+                         bordercolor("#444") |> borderstyle(dashed),
+                         session.style)
         end
-        # els = foldl(|>, els, session.chunkstyles[i])
 
-        #if session.chunks[i]==currentChunk
-        #    els = els |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
-        #end
+        next = Array(Tile, nbel)
+        for i in 1:nbel
+            # println(i, "  ", index)
+            if length(session.chunks[i]) == 0
+                els = vskip(0.5em)
+            else
+                els = vbox(session.chunks[i]...)
+            end
+            els = foldl(|>, els, session.chunkstyles[i])
 
-        next[i] = els
+            if session.chunks[i]==currentChunk
+               els = els |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
+            end
+
+            next[i] = els
+        end
+        return foldl(|>, vbox(next...), session.style)
+
+    catch err
+        # println("catch in build()")
+        bt = backtrace()
+        str = sprint() do io
+            showerror(io, err)
+            Base.show_backtrace(io, bt)
+        end
+        newstream = Elem(:pre, str)
+        # newstream = vbox([str])
     end
-    # return foldl(|>, vbox(next...), session.style)
-    vbox(next...)
 end
 
 ### initializes the server
 function init(port_hint=5555)
-    global sock, serverid, active, port
+    global serverid, port
 
     println("init")
 
@@ -126,9 +108,8 @@ function init(port_hint=5555)
         Mux.defaults,
         route("pkg/:pkg", packagefiles("assets"), Mux.notfound()),
         route("assets", Mux.files(Pkg.dir("Escher", "assets")), Mux.notfound()),
-        # route("assets", Mux.files(dir), Mux.notfound()),
         route("/:session", req -> setup_socket(req[:params][:session]) ),
-        route("/", req -> setup_socket("Paper")),
+        # route("/", req -> setup_socket("Paper")),
         Mux.notfound(),
     )
 
@@ -140,34 +121,27 @@ function init(port_hint=5555)
         Mux.notfound(),
     )
 
-
-
-
-
     #find open port
-    port, sock = listenany(port_hint) ; close(sock)
+    port, sock = listenany(port_hint) # find an available port
+    close(sock)
     serverid = @async serve(static, comm, port)
-
-    active = true
 end
 
-
-macro restart_server()
-end
-
-# macro session() 
-#     @session(gensym("session"))
+# TODO
+# macro restart_server()
 # end
 
-macro session(name::Symbol)
+function session(name::Symbol, style=[])
     global currentSession, currentChunk
 
     haskey(sessions, name) && error("There is already a session '$name'")
 
-    newsession = Session()
+    newsession     = Session(style)
     sessions[name] = newsession
     currentSession = newsession
     currentChunk   = nothing
+
+    serverid == nothing && init() # launch server if needed
     
     fulladdr = "http://127.0.0.1:$port/$name"
     @linux_only   run(`xdg-open $fulladdr`)
@@ -175,5 +149,28 @@ macro session(name::Symbol)
     @windows_only run(`cmd /c start $fulladdr`)
 end
 
+macro session(args...)
+    length(args) == 0 && session(gensym("session"))
+
+    if isa(args[1], Symbol)  # we will presume it is the session name
+        sn = args[1]
+        i0 = 2
+    else
+        sn = gensym("session")
+        i0 = 1
+    end
+
+    style = []
+    for a in args[i0:end]
+        try
+            push!(style, eval(a))
+        catch e
+            warn("can't evaluate $a, error $e")
+        end
+    end
+    session(sn, style)
+end
+
+# TODO
 # macro close_session(name::Symbol=currentSession)
 # end
