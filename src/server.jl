@@ -8,6 +8,7 @@ include(Pkg.dir("Escher", "src", "cli", "serve.jl"))
 ### specific socket definition for Paper's purpose
 function uisocket(req)
     sn = req[:params][:session] # session name
+    println("session : $sn ($(typeof(sn)))  => $(symbol(sn))")
     session = sessions[symbol(sn)]
 
     d = query_dict(req[:query])
@@ -150,14 +151,13 @@ function session(name::Symbol, style=[])
 end
 
 macro session(args...)
-    length(args) == 0 && session(gensym("session"))
+    sn = symbol("_session$(length(sessions)+1)") # default session name
+    length(args) == 0 && return session(sn)
 
+    i0 = 1
     if isa(args[1], Symbol)  # we will presume it is the session name
         sn = args[1]
-        i0 = 2
-    else
-        sn = gensym("session")
-        i0 = 1
+        i0 += 1
     end
 
     style = []

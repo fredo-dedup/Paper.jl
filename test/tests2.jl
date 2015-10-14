@@ -1,10 +1,11 @@
 ########### basic tests  ##################
 	using Base.Markdown
 	workspace()
-	reload("Paper")
+	reload("Paper") ; p = Paper
 	using Paper
 
-	p.@session abcd3
+	@session abcd4
+	@session
 
 	current_task()
 	p.serverid
@@ -14,11 +15,46 @@
 	p.mute_writemime
 	p.currentChunk
 	123
-	p.title(1,"test")
+	title(1,"test")
 
 	methods(writemime, (IO, MIME{symbol("text/plain")}, Any))
-
 	p.@rewire Number
+
+	p.container(10em, 15em) |> p.fillcolor("tomato")
+
+
+	Base.Multimedia.displays
+
+	@chunk plot5
+
+	Paper.chunk(:abcd)
+	Paper.chunk(gensym("abcd"))
+
+	@chunk
+	@chunk plot1 fontcolor("tomato")
+	plaintext("kljhazeflh")
+	tex("\\sum_2^n")
+
+	plaintext(Paper.currentSession.chunknames)
+	plaintext(Paper.currentSession.chunknames) |> fontcolor("tomato")
+	
+	@chunk
+	@chunk font fontsize(1em)
+	plaintext(Paper.currentSession.chunknames)
+
+	@chunk font2 fontsize(3mm) fontcolor("tomato") border()
+	plaintext(Paper.currentSession.chunknames)
+
+	plaintext(Paper.currentSession.chunkstyles) |> fontsize(2em)
+	plaintext(Paper.currentSession.chunkstyles) |> fontcolor("tomato")
+
+	plaintext(Paper.sessions)
+
+
+	methods(fontsize)
+
+
+	Paper.currentSession.chunknames
 
 ###########   display ???  ###########################
 	display(12)
@@ -91,6 +127,21 @@
 	workspace()
 	using Paper
 	whos()
+
+
+	cm = PyPlot.ColorMap("Spectral")
+	typeof(cm)
+
+	Paper.bestmime(cm)
+	mimewritable(::MIME"image/svg+xml", ::PyPlot.Figure)
+
+	display(typeof(cm))
+
+	@rewire Main.PyPlot.ColorMap
+	cm
+
+	methods(display, (PyPlot.Figure,))
+
 
 #########  Compose  #############
 	using Compose

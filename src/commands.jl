@@ -1,7 +1,7 @@
 ############ user commands ##################
 
     macro chunk(args...)
-        length(args) == 0 && chunk(gensym("chunk"))
+        length(args) == 0 && return chunk(gensym("chunk"))
 
         if isa(args[1], Symbol)  # we will presume it is the chunk name
             cn = args[1]
