@@ -38,7 +38,12 @@ function uisocket(req)
 
     # client commands processing ?
     @async while isopen(sock)
-        data = read(sock)
+        try 
+            data = read(sock)
+        catch
+            warn("closing session $sn")
+            break
+        end
 
         msg = JSON.parse(bytestring(data))
         if !haskey(commands, msg["command"])
@@ -58,13 +63,15 @@ end
 ### builds the Escher page structure
 function build(session::Session)
     # session = p.sessions[:abcd]
+    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
+    italicmessage(t) = t |> fontcolor("#444") |> fontstyle(italic)
+
     try 
         nbel = length(session.chunks)
         # println("build, nbel = $nbel")
         if nbel==0 
             return foldl(|>, 
-                         title(1,"Ready...") |> borderwidth(1px) |> 
-                         bordercolor("#444") |> borderstyle(dashed),
+                         title(1,"Ready...") |> italicmessage,
                          session.style)
         end
 
@@ -72,23 +79,23 @@ function build(session::Session)
         for i in 1:nbel
             # println(i, "  ", index)
             if length(session.chunks[i]) == 0
-                els = vskip(0.5em)
+                els = vbox(plaintext(session.chunknames[i]) |> italicmessage )
             else
-                els = vbox(session.chunks[i]...)
+                els = vbox(session.chunks[i])
             end
             els = foldl(|>, els, session.chunkstyles[i])
 
             if session.chunks[i]==currentChunk
-               els = els |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
+               els = els |> dashedborder
             end
-
             next[i] = els
         end
         return foldl(|>, vbox(next...), session.style)
+        # return foldl(|>, next, session.style)
 
     catch err
         # println("catch in build()")
-        bt = backtrace()
+        bt = catch_backtrace()
         str = sprint() do io
             showerror(io, err)
             Base.show_backtrace(io, bt)
@@ -113,7 +120,6 @@ function init(port_hint=5555)
         # route("/", req -> setup_socket("Paper")),
         Mux.notfound(),
     )
-
 
     @app comm = (
         Mux.wdefaults,

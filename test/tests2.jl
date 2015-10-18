@@ -56,6 +56,65 @@
 
 	Paper.currentSession.chunknames
 
+########### layout  #####################
+	using Paper
+	@session abcd4
+
+	@chunk c1 fontcolor("tomato") fontsize(5mm)
+	plaintext("coucou les amis")
+	tex("x=e^{-x} P(x)")
+	title(2, "niok")
+	tex("x=e^{-x} P(x)") 
+	plaintext("coucou les amis")
+
+	@chunk c2 wrap height(10em)
+	hline()
+	title(1, "yoo hoo") |> width(5em)
+	hline()
+
+	@chunk c3 pad(1em) maxheight(10em) clip()
+	plaintext("coucou les amis qs dqsdq sdqsdqsdqsd qsdqs dqs dqsdqsd qsdqs qsdq qsdqs qsdqsdsq") |> width(30cent)
+
+	@chunk c3  maxheight(10em) clip() pad(1em)
+	plaintext("coucou les amis qs dqsdq sdqsdqsdqsd qsdqs dqs dqsdqsd qsdqs qsdq qsdqs qsdqsdsq")
+
+	@session tests2 pad(1em)
+
+	@chunk c1 maxheight(10em) width(20em) clip() fillcolor("lightgrey") 
+	plaintext("coucou les amis qs dqsdq sdqsdqsdqsd qsdqs dqs dqsdqsd qsdqs qsdq qsdqs qsdqsdsq")
+
+	@chunk c4 width(10em) height(10em) flow(vertical)  wrap  fillcolor("lightyellow")
+
+	plaintext("coucou les amis")
+
+	@chunk c5 fillcolor("lightblue") flow(vertical) height(10em) packlines(axisstart)
+	vbox(["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |> 
+		wrap |>
+		height(8em) 
+
+	flow(horizontal, ["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |> 
+		fontcolor("tomato")
+
+	methods(packitems)
+
+
+	plaintext("coucou les amis") |> width(10em)  # marche
+	[plaintext("coucou les amis"), plaintext("yo")] |> width(10em)
+	# marche pas : no method matching convert(::Type{Escher.Tile}, ::Array{Escher.Leaf,1})
+
+	plaintext("coucou les amis") |> wrap 
+	# marche pas : no method matching convert(::Type{Escher.FlexContainer}, ::Escher.Leaf)
+	[plaintext("coucou les amis"), plaintext("yo")] |> wrap
+	# marche pas : no method matching convert(::Type{FlexContainer}, ::Array{Escher.Leaf,1})
+
+	plaintext("coucou les amis") |> vbox  # ok
+	[plaintext("coucou les amis"), plaintext("yo")] |> vbox  # ok
+
+	t1 = vbox(plaintext("coucou les amis"))
+	isa(t1, Tile)  # true
+	isa(t1, Escher.FlexContainer) # true
+
+
 ###########   display ???  ###########################
 	display(12)
 	methods(display)
