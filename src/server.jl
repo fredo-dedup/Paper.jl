@@ -42,7 +42,7 @@ function uisocket(req)
             data = read(sock)
         catch
             warn("closing session $sn")
-            break
+            exit(1)
         end
 
         msg = JSON.parse(bytestring(data))

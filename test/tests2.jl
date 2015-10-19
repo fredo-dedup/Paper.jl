@@ -284,18 +284,66 @@
 		sleep(0.2)
 	end
 
-############### layout  #########################
+############### signals hell  #########################
 
-	@chunk plot
+	using Paper
 
-	hbox(hskip(1em),
-		 vbox(vskip(10em) |> width(5em)) |> borderwidth(1px) |> bordercolor("#e44") |> borderstyle(dashed),
-		 hskip(1em))
+    @session signals pad(1em)
+    @chunk header
+    title(1, "Signals")
 
-	@chunk plot2 fontcolor("#499")
-	Paper.title(2, "hei ho") |> fontcolor("#499")
+    @chunk signal
 
-	Paper.currentSession.chunks[3]
-	Paper.currentSession.chunkstyles
 
-	@chunk plot5
+    abᵗ  = Input(100.)
+
+    lift(println, abᵗ)
+
+    push!(abᵗ, 12)
+    push!(abᵗ, 41)
+
+    slider(1:1000, value=100) >>> abᵗ
+
+    value(abᵗ)
+
+    subscribe(slider(1:1000), abᵗ)
+
+    methods(subscribe)
+
+
+    stationary(abᵗ) do x
+        println("aaaa : $x")
+        subscribe(slider(1:1000), abᵗ)   
+    end
+
+    stationary(abᵗ) do x
+        plaintext("aaaa : $x")
+    end
+
+    md"les sliders ne mettent pas à jour les signals associés"
+    md"mais les Tiles répondent bien aux signaux"
+
+    sig = Input(12)
+    slider(1:100, value=15) >>> sig
+    lift(println, sig)
+
+    push!(sig, 32)
+
+    stationary(abᵗ) do x
+        slider(1:1000, value=x)
+    end
+
+    v1 = slider(1:1000);
+    sig2 = Input(12)
+    v2 = slider(1:1000)  >>> sig2;
+
+    typeof(v1) # Escher.Slider
+    isa(v1, Tile) # true
+    isa(v1, Signal) # false
+
+    typeof(v2) # Escher.Subscription
+    isa(v1, Tile) # true
+    isa(v1, Signal) # false
+
+    Paper.currentChunk
+

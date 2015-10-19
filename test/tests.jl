@@ -36,8 +36,6 @@ md"""
 """
 
 
-
-
 	fm = Paper.tex("e^2")
 
 	Escher.slider(0:10)
