@@ -170,18 +170,41 @@
 	element.scrollIntoView(alignWithTop);
 
 #########  PyPlot  #############
-	using PyPlot
+	workspace()
+	import PyPlot
+	using Paper
 
 	import Base.Multimedia.mimewritable
 	mimewritable(::MIME"image/svg+xml", ::PyPlot.Figure) = true
 	@rewire Main.PyPlot.Figure
 
-	@session PyPlot
+	@session PyPlot2 pad(1em)
+
 	@chunk plot
 	x = linspace(0,2*pi,1000); y = sin(cos(0.2x.^2));
-	p1 = PyPlot.plot(x, y, color="red", linewidth=1.0, linestyle="--")
-	p2 = PyPlot.title("A sinusoidally modulated sinusoid")
-	gcf()
+	PyPlot.plot(x, y, color="red", linewidth=1.0, linestyle="--")
+	PyPlot.title("A sinusoidally modulated sinusoid")
+	PyPlot.gcf()
+	PyPlot.close()
+
+	@chunk plot2
+
+	@chunk plot3 fillcolor("yellow")
+	sig = Input(1.0)
+	stationary(sig) do f
+		PyPlot.close()
+		x = linspace(0,2*pi,1000); y = sin(cos(f*x.^2));
+		p1 = PyPlot.plot(x, y, color="red", linewidth=1.0, linestyle="--")
+		p2 = PyPlot.title("A sinusoidally modulated sinusoid")
+		PyPlot.gcf()
+	end
+
+	push!(sig, 0.5)
+	push!(sig, 0.2)
+
+	Paper.currentChunk
+
+	Paper.currentSession
 
 	workspace()
 	using Paper
@@ -200,7 +223,6 @@
 	cm
 
 	methods(display, (PyPlot.Figure,))
-
 
 #########  Compose  #############
 	using Compose
@@ -252,7 +274,6 @@
 	p.plan[:plot] = []
 	p.notify(p.updated)
 
-
 ############### animated graph  #########################
 	whos()
 	using Paper
@@ -286,7 +307,10 @@
 
 ############### signals hell  #########################
 
-	using Paper
+	workspace()
+	reload("Paper") ; using Paper
+
+    @loadasset "widgets"
 
     @session signals pad(1em)
     @chunk header
@@ -309,12 +333,6 @@
     subscribe(slider(1:1000), abᵗ)
 
     methods(subscribe)
-
-
-    stationary(abᵗ) do x
-        println("aaaa : $x")
-        subscribe(slider(1:1000), abᵗ)   
-    end
 
     stationary(abᵗ) do x
         plaintext("aaaa : $x")

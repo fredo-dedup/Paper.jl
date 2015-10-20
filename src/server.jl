@@ -23,10 +23,11 @@ function uisocket(req)
     # window dimensions and what not
 
     window = Window(dimension=(w*px, h*px))
+    session.window = window
 
     # import by default
-    write(sock, JSON.json(import_cmd("tex")))
-    write(sock, JSON.json(import_cmd("widgets")))
+    # write(sock, JSON.json(import_cmd("tex")))
+    # write(sock, JSON.json(import_cmd("widgets")))
 
     lift(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
@@ -63,8 +64,9 @@ end
 ### builds the Escher page structure
 function build(session::Session)
     # session = p.sessions[:abcd]
-    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
-    italicmessage(t) = t |> fontcolor("#444") |> fontstyle(italic)
+    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |> 
+                        borderstyle(dashed)
+    italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
 
     try 
         nbel = length(session.chunks)
@@ -175,6 +177,20 @@ macro session(args...)
         end
     end
     session(sn, style)
+end
+
+macro loadasset(args...)
+    currentSession == nothing && error("No session active yet, run @session")
+    currentSession.window == nothing && 
+        error("No window for this session yet")
+
+    for a in args
+        if isa(a, AbstractString)
+            push!(currentSession.window.assets, a)
+        else
+            warn("$a is not a string")
+        end
+    end
 end
 
 # TODO

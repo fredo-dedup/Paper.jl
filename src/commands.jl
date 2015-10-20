@@ -26,7 +26,7 @@
     function chunk(name, style=[])
         global currentChunk
 
-        currentSession==nothing && session(gensym("session"))  # open new session
+        currentSession==nothing && session(gensym("session")) # open new session
 
         if name in currentSession.chunknames # replace existing chunk
             index = indexin([name], currentSession.chunknames)[1]
@@ -47,8 +47,8 @@
 
     function addtochunk(t)
         # println("addtochunk $t ($(typeof(t)))")
-        # Base.show_backtrace(STDOUT, backtrace())
-        # println() ; println()
+        Base.show_backtrace(STDOUT, backtrace())
+        println() ; println()
 
         if currentSession==nothing
             println("No active session yet")
