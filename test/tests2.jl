@@ -288,33 +288,66 @@
 
 	using Paper
 
-    @session signals pad(1em)
+    @session signals2 pad(1em)
     @chunk header
-    title(1, "Signals")
-
-    @chunk signal
+    title(1, "Signals2")
 
 
     abᵗ  = Input(100.)
 
+    @chunk signal
+    stationary(abᵗ) do x
+        plaintext("aaaa : $x")
+    end
+
+    @chunk part2
+    stationary(abᵗ) do x
+        plaintext("bbbb : $(x+10)")
+    end
+
+    @chunk part3
+    stationary(abᵗ) do x
+        plaintext("cccc : $(x+100)")
+    end
+
+    lift(abᵗ) do x
+        plaintext("dddd : $x")
+    end
+    
     lift(println, abᵗ)
 
     push!(abᵗ, 12)
     push!(abᵗ, 41)
 
+    Paper.currentChunk
+
     slider(1:1000, value=100) >>> abᵗ
+
+
 
     value(abᵗ)
 
     subscribe(slider(1:1000), abᵗ)
+    # methods(subscribe)
 
-    methods(subscribe)
+    # stationary(abᵗ) do x
+    #     println("aaaa : $x")
+    #     subscribe(slider(1:1000), abᵗ)   
+    # end
 
 
     stationary(abᵗ) do x
         println("aaaa : $x")
-        subscribe(slider(1:1000), abᵗ)   
+        slider(1:1000, value=x)
     end
+
+    @chunk part2
+    stationary(abᵗ) do x
+        println("bbbb : $x")
+        slider(1:1000, value=x+10)
+    end
+
+    hline()
 
     stationary(abᵗ) do x
         plaintext("aaaa : $x")
