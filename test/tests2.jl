@@ -116,6 +116,52 @@
 
 
 ###########   display ???  ###########################
+
+	methods(display)
+	ds = Base.Multimedia.displays
+	 # TextDisplay(IOStream(<fd 10>))
+	 # IPythonDisplay.InlineDisplay()
+
+	display(ds[2], MIME"text/plain"(), 2) # rien
+	display(ds[1], MIME"text/plain"(), 2) # rien
+
+	type Foo ; x ; end
+
+	import Base.Multimedia: writemime, display
+
+	function writemime(io::IO, mt::MIME"text/plain", x::Foo)
+		Base.show_backtrace(STDOUT, backtrace())
+		println("wm : $x")
+	end
+
+	immutable PaperDisplay <: Display
+	end
+
+	display(d::PaperDisplay, M::MIME"text/plain", x) = println("Paper: $x")
+	display(d::PaperDisplay, x) = display(d, MIME"text/plain"(), x)
+
+	pd = PaperDisplay()
+	pushdisplay(pd)
+
+	412
+
+	display(d::PaperDisplay, M::MIME"text/plain", x::Foo) = println("Paper: $(x.x)")
+	display(d::PaperDisplay, x::Foo) = display(d, MIME"text/plain"(), x)
+
+	Foo(412)
+
+
+
+	Foo(2)
+
+                    # println("$io,   $(io==STDOUT))")
+                    # println("interact : $(isinteractive())")
+                    # println("task : $(current_task())")
+                    current_task()==currentTask && ($func)(x) # send only if interactive task
+                    ($meth)(io, mt, x)
+                end 
+
+
 	display(12)
 	methods(display)
 	methods(display, (Any, MIME{symbol("text/plain")}, Any))
