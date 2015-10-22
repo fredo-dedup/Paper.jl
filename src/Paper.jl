@@ -5,8 +5,11 @@
 # add : commands to load Escher assets
 # alt : catch writemime calls, as if in debugging mode ? and use Signals...
 # alt : lookup watch_io in stdio.jl
-# add : Matplotlib Tiles
-# alt : Traits pour capter appels à writemime
+# add : Matplotlib Tiles - OK
+# alt : Traits pour capter appels à writemime ?
+# issue : pyplot showing multiple times, sometimes impossible to remove but with a F5
+# issue : widget signal not caught 
+
 
 __precompile__(false)
 
@@ -36,9 +39,10 @@ module Paper
         chunknames::Vector{Symbol}
         chunkstyles::Vector
         style::Vector
+        window
     end
-    Session()      = Session([], Symbol[], [],    [])
-    Session(style) = Session([], Symbol[], [], style)
+    Session()      = Session([], Symbol[], [],    [], nothing)
+    Session(style) = Session([], Symbol[], [], style, nothing)
 
     sessions = Dict{Symbol, Session}()
 
@@ -46,7 +50,7 @@ module Paper
     include("commands.jl")
     include("rewire.jl")
 
-    export @chunk, @session, @rewire
+    export @chunk, @session, @rewire, @loadasset
     export stationary
 
 

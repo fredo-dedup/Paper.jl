@@ -23,10 +23,11 @@ function uisocket(req)
     # window dimensions and what not
 
     window = Window(dimension=(w*px, h*px))
+    session.window = window
 
     # import by default
-    write(sock, JSON.json(import_cmd("tex")))
-    write(sock, JSON.json(import_cmd("widgets")))
+    # write(sock, JSON.json(import_cmd("tex")))
+    # write(sock, JSON.json(import_cmd("widgets")))
 
     lift(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
@@ -40,16 +41,14 @@ function uisocket(req)
     @async while isopen(sock)
         try 
             data = read(sock)
+            msg = JSON.parse(bytestring(data))
+            if !haskey(commands, msg["command"])
+                warn("Unknown command received ", msg["command"])
+            else
+                commands[msg["command"]](window, msg)
+            end
         catch
-            warn("closing session $sn")
-            exit(1)
-        end
-
-        msg = JSON.parse(bytestring(data))
-        if !haskey(commands, msg["command"])
-            warn("Unknown command received ", msg["command"])
-        else
-            commands[msg["command"]](window, msg)
+            error("Error while reading from websocket, closing session $sn")
         end
     end
 
@@ -63,8 +62,9 @@ end
 ### builds the Escher page structure
 function build(session::Session)
     # session = p.sessions[:abcd]
-    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#444") |> borderstyle(dashed)
-    italicmessage(t) = t |> fontcolor("#444") |> fontstyle(italic)
+    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |> 
+                        borderstyle(dashed)
+    italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
 
     try 
         nbel = length(session.chunks)
@@ -175,6 +175,20 @@ macro session(args...)
         end
     end
     session(sn, style)
+end
+
+macro loadasset(args...)
+    currentSession == nothing && error("No session active yet, run @session")
+    currentSession.window == nothing && 
+        error("No window for this session yet")
+
+    for a in args
+        if isa(a, AbstractString)
+            push!(currentSession.window.assets, a)
+        else
+            warn("$a is not a string")
+        end
+    end
 end
 
 # TODO
