@@ -35,8 +35,8 @@
             currentChunk = currentSession.chunks[index]
         else
             push!(currentSession.chunknames, name)
-            push!(currentSession.chunks,       [])    
-            push!(currentSession.chunkstyles,  style)    
+            push!(currentSession.chunks,       [])
+            push!(currentSession.chunkstyles,  style)
             currentChunk = currentSession.chunks[end]
         end
 
@@ -46,7 +46,7 @@
 
 
     function addtochunk(t)
-        # println("addtochunk $t ($(typeof(t)))")
+        println("addtochunk $t ($(typeof(t)))")
         Base.show_backtrace(STDOUT, backtrace())
         println() ; println()
 
@@ -58,7 +58,7 @@
             return
         end
         push!(currentChunk, t)
-        notify(updated) 
+        notify(updated)
         nothing
     end
 
@@ -66,10 +66,9 @@
         st = lift(f, signals...)
         addtochunk(empty)
         ch   = currentChunk
-        slot = length(currentChunk) 
+        slot = length(currentChunk)
         lift(st) do nt
             ch[slot] = nt
             notify(updated)
         end
     end
-

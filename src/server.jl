@@ -41,16 +41,14 @@ function uisocket(req)
     @async while isopen(sock)
         try 
             data = read(sock)
+            msg = JSON.parse(bytestring(data))
+            if !haskey(commands, msg["command"])
+                warn("Unknown command received ", msg["command"])
+            else
+                commands[msg["command"]](window, msg)
+            end
         catch
-            warn("closing session $sn")
-            exit(1)
-        end
-
-        msg = JSON.parse(bytestring(data))
-        if !haskey(commands, msg["command"])
-            warn("Unknown command received ", msg["command"])
-        else
-            commands[msg["command"]](window, msg)
+            error("Error while reading from websocket, closing session $sn")
         end
     end
 
