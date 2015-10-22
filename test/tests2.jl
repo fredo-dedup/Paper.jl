@@ -13,8 +13,7 @@
 	p.@chunk header
 	p.@chunk
 	p.mute_writemime
-	p.currentChunk
-	123
+	p.currentChunk 123
 	title(1,"test")
 
 	methods(writemime, (IO, MIME{symbol("text/plain")}, Any))
@@ -37,7 +36,7 @@
 
 	plaintext(Paper.currentSession.chunknames)
 	plaintext(Paper.currentSession.chunknames) |> fontcolor("tomato")
-	
+
 	@chunk
 	@chunk font fontsize(1em)
 	plaintext(Paper.currentSession.chunknames)
@@ -64,7 +63,7 @@
 	plaintext("coucou les amis")
 	tex("x=e^{-x} P(x)")
 	title(2, "niok")
-	tex("x=e^{-x} P(x)") 
+	tex("x=e^{-x} P(x)")
 	plaintext("coucou les amis")
 
 	@chunk c2 wrap height(10em)
@@ -80,7 +79,7 @@
 
 	@session tests2 pad(1em)
 
-	@chunk c1 maxheight(10em) width(20em) clip() fillcolor("lightgrey") 
+	@chunk c1 maxheight(10em) width(20em) clip() fillcolor("lightgrey")
 	plaintext("coucou les amis qs dqsdq sdqsdqsdqsd qsdqs dqs dqsdqsd qsdqs qsdq qsdqs qsdqsdsq")
 
 	@chunk c4 width(10em) height(10em) flow(vertical)  wrap  fillcolor("lightyellow")
@@ -88,21 +87,20 @@
 	plaintext("coucou les amis")
 
 	@chunk c5 fillcolor("lightblue") flow(vertical) height(10em) packlines(axisstart)
-	vbox(["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |> 
+	vbox(["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |>
 		wrap |>
-		height(8em) 
+		height(8em)
 
-	flow(horizontal, ["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |> 
+	flow(horizontal, ["ab", "cd", "qk", "jsh", "qs", "dlkj", "qsd"]) |>
 		fontcolor("tomato")
 
 	methods(packitems)
 
 
 	plaintext("coucou les amis") |> width(10em)  # marche
-	[plaintext("coucou les amis"), plaintext("yo")] |> width(10em)
-	# marche pas : no method matching convert(::Type{Escher.Tile}, ::Array{Escher.Leaf,1})
+	[plaintext("coucou les amis"), plaintext("yo")] |> width(10em) # marche pas : no method matching convert(::Type{Escher.Tile}, ::Array{Escher.Leaf,1})
 
-	plaintext("coucou les amis") |> wrap 
+	plaintext("coucou les amis") |> wrap
 	# marche pas : no method matching convert(::Type{Escher.FlexContainer}, ::Escher.Leaf)
 	[plaintext("coucou les amis"), plaintext("yo")] |> wrap
 	# marche pas : no method matching convert(::Type{FlexContainer}, ::Array{Escher.Leaf,1})
@@ -181,7 +179,8 @@
 	@session PyPlot2 pad(1em)
 
 	@chunk plot
-	x = linspace(0,2*pi,1000); y = sin(cos(0.2x.^2));
+	x = linspace(0,2*pi,1000)
+	y = sin(cos(0.2x.^2))
 	PyPlot.plot(x, y, color="red", linewidth=1.0, linestyle="--")
 	PyPlot.title("A sinusoidally modulated sinusoid")
 	PyPlot.gcf()
@@ -258,7 +257,7 @@
 		ll₁ = flik(μA₁, μB₁)
 		if ll₁-ll >= rand()
 			μA, μB, ll = μA₁, μB₁, ll₁
-			push!(μAs, μA) ; push!(μBs, μB) ; 
+			push!(μAs, μA) ; push!(μBs, μB) ;
 			naccept += 1
 		end
 		if iter % 10 == 0
@@ -268,7 +267,7 @@
 
 	plot(x=μAs, y=μBs),
 	         	  Scale.x_continuous(minvalue=0,maxvalue=8),
-	              Scale.y_continuous(minvalue=0,maxvalue=8)) 
+	              Scale.y_continuous(minvalue=0,maxvalue=8))
 
 	p.@chunk plot
 	p.plan[:plot] = []
@@ -337,7 +336,7 @@
     lift(abᵗ) do x
         plaintext("dddd : $x")
     end
-    
+
     lift(println, abᵗ)
 
     push!(abᵗ, 12)
@@ -356,7 +355,7 @@
 
     # stationary(abᵗ) do x
     #     println("aaaa : $x")
-    #     subscribe(slider(1:1000), abᵗ)   
+    #     subscribe(slider(1:1000), abᵗ)
     # end
 
 
@@ -390,4 +389,3 @@
     isa(v1, Signal) # false
 
     Paper.currentChunk
-
