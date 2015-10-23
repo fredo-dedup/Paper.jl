@@ -4,8 +4,8 @@ methods(display)
 methods(display, (Any, MIME{symbol("text/plain")}, Any))
 methods(redisplay)
 
-          meths = methods(display, (Any, MIME{symbol("text/plain")}, Number))
-
+meths = methods(display, (Any, MIME{symbol("text/plain")}, Number))
+Base.Multimedia.displays
 
 p.title(2,"Header")
 
@@ -80,7 +80,93 @@ display(t)
 methods(display, (Tile,))
 
 ############################################################
+5+6
+module Sandbox2; end
+module Sandbox2
+
+reload("Paper")
 using Paper
+
+Paper.sessions
+
+a = 20
+current_module()
+
+@session show6 pad(1em)
+@chunk TT2
+Paper.addtochunk("abcd")
+Paper.addtochunk(title(3, "Titre"))
+tv = title(3, "nouveau Titre")
+typeof(tv)
+isa(tv, Tile)
+
+t = tex("\\sum")
+Paper.currentChunk
+
+m1 = methods(writemime, (IO, MIME"text/plain", Any))
+
+import Base.Multimedia.writemime
+# marche si appelé explicitement, @rewire marche pas
+writemime(io::IO, ::MIME"text/plain", t::Tile) = Paper.addtochunk( t )
+
+m2 = methods(writemime, (IO, MIME"text/plain", Any))
+
+println(m1[1], " /// ", m2[1])
+for i in 1:length(m1)
+  println(m1[i]==m2[i])
+end
+
+type Foo ; end
+Foo() # pas d'affichage
+writemime(io::IO, ::MIME"text/plain", t::Foo) = Paper.addtochunk( "foo !" )
+Foo() # affichage
+
+type Foo2 ; end
+Foo2() # pas d'affichage
+Paper.rewire(Foo2) do x
+    Paper.addtochunk("foo 2 !")
+end
+export writemime # change rien
+Foo2() # marche pas
+
+writemime(io::IO, ::MIME"text/plain", t::Foo) = Paper.addtochunk( "foo !" )
+Foo() # affichage
+
+
+end
+
+module Sandbox; end
+module Sandbox
+using Paper
+using Media
+using Graphics
+
+type PaperDisplay ; end
+
+pd = PaperDisplay()
+
+type Foo; end
+
+setdisplay(Foo, pd)
+
+import Graphics.render
+function render(pd::PaperDisplay, x)
+  println("yo ça marche")
+end
+
+
+
+Foo()
+
+end
+
+
+whos()
+using Paper
+reload("Paper")
+
+a
+Sandbox2.a
 
 methods(writemime, (IO, MIME"text/plain", Any))
 type TT; x ; end
@@ -90,17 +176,25 @@ show(io::IO, t::TT) = (println("been here") ; Base.show_backtrace(STDOUT, backtr
 @session show
 @chunk TT
 Paper.addtochunk("abcd")
+Paper.addtochunk(title(3, "Titre"))
+title(3, "Titre")
+
 TT(2)
 
 import Base.Multimedia.writemime
 function writemime(io::IO, ::MIME"text/plain", Any, x::TT)
-    println("been here 3")
-    Paper.addtochunk( string(x.x) )
+  println("been here 3")
+  Paper.addtochunk( string(x.x) )
 end
 
-function writemime(io::IO, ::MIME"text/plain", t::Tile)
-    Paper.addtochunk( t )
+macro test(outer,inner=[])
 end
+
+
+# marche si appelé explicitement, @rewire marche pas
+writemime(io::IO, ::MIME"text/plain", t::Tile) = Paper.addtochunk( t )
+
+@rewire Tile
 
 TT(2)
 TT(5)
@@ -112,7 +206,6 @@ Paper.rewire(x -> Paper.addtochunk("ha ha"), Main.TT)
 
 VERSION
 Paper.currentChunk
-
 
 ############################################################
 
