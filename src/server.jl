@@ -39,7 +39,7 @@ function uisocket(req)
 
     # client commands processing ?
     @async while isopen(sock)
-        try 
+        try
             data = read(sock)
             msg = JSON.parse(bytestring(data))
             if !haskey(commands, msg["command"])
@@ -48,29 +48,33 @@ function uisocket(req)
                 commands[msg["command"]](window, msg)
             end
         catch
-            error("Error while reading from websocket, closing session $sn")
+            error("\nError while reading from websocket, closing session $sn")
         end
     end
 
     while isopen(sock)
         wait(updated)
         newstream = build(session)
-        swap!(tilestream, newstream)
+        try
+            swap!(tilestream, newstream)
+        catch err
+            error("\nError while updating, closing session $sn")
+        end
     end
 end
 
 ### builds the Escher page structure
 function build(session::Session)
     # session = p.sessions[:abcd]
-    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |> 
+    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |>
                         borderstyle(dashed)
     italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
 
-    try 
+    try
         nbel = length(session.chunks)
         # println("build, nbel = $nbel")
-        if nbel==0 
-            return foldl(|>, 
+        if nbel==0
+            return foldl(|>,
                          title(1,"Ready...") |> italicmessage,
                          session.style)
         end
@@ -149,7 +153,7 @@ function session(name::Symbol, style=[])
     currentChunk   = nothing
 
     serverid == nothing && init() # launch server if needed
-    
+
     fulladdr = "http://127.0.0.1:$port/$name"
     @linux_only   run(`xdg-open $fulladdr`)
     @osx_only     run(`open $fulladdr`)
@@ -179,7 +183,7 @@ end
 
 macro loadasset(args...)
     currentSession == nothing && error("No session active yet, run @session")
-    currentSession.window == nothing && 
+    currentSession.window == nothing &&
         error("No window for this session yet")
 
     for a in args

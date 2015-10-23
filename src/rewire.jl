@@ -9,18 +9,18 @@ const currentTask = current_task()
 function rewire{T<:MIME}(func::Function, mt::Type{T}, t::Type)
     if method_exists(writemime, (IO, mt, t))
         meth = methods(writemime, (IO, mt, t))[1].func
-        ex = quote 
+        ex = quote
                 function writemime(io::IO, mt::$mt, x::$t)
                     # println("$io,   $(io==STDOUT))")
                     # println("interact : $(isinteractive())")
-                    # println("task : $(current_task())")
+                    println("task : $(current_task())")
                     current_task()==currentTask && ($func)(x) # send only if interactive task
                     ($meth)(io, mt, x)
-                end 
+                end
              end
     else
         ex = quote
-                function writemime(io::IO, mt::$mt, x::$t) 
+                function writemime(io::IO, mt::$mt, x::$t)
                     current_task()==currentTask && ($func)(x)
                 end
              end

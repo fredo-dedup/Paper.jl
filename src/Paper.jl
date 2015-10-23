@@ -8,7 +8,7 @@
 # add : Matplotlib Tiles - OK
 # alt : Traits pour capter appels à writemime ?
 # issue : pyplot showing multiple times, sometimes impossible to remove but with a F5
-# issue : widget signal not caught 
+# issue : widget signal not caught
 
 
 __precompile__(false)
@@ -17,7 +17,7 @@ module Paper
 
     using Compat
     using Reexport
-    
+
     using Requires
     using Mux
     using JSON
@@ -52,7 +52,6 @@ module Paper
 
     export @chunk, @session, @rewire, @loadasset
     export stationary
-
+    export writemime
 
 end
-
