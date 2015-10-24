@@ -134,6 +134,7 @@ Foo() # affichage
 
 
 end
+############################################################
 
 module Sandbox; end
 module Sandbox
@@ -147,6 +148,31 @@ pd = PaperDisplay()
 
 type Foo; end
 
+import Base.Multimedia.writemime
+function writemime(io::IO, ::MIME"text/plain", t::Sandbox.Foo)
+    println("writemime ...")
+    Base.show_backtrace(STDOUT, backtrace())
+end
+writemime(io::IO, ::MIME"text/plain", t::Foo) = Paper.addtochunk( "foo !" )
+
+f() = 4.
+f()
+rand(2,2)
+Foo()
+456+46
+ 465+3
+5+6
+methods(writemime, (IO, MIME"text/plain", AbstractArray))
+
+import Base.Multimedia.writemime
+function writemime(io::IO, ::MIME"text/plain", t::Sandbox.Foo)
+    println("writemime ...")
+    Base.show_backtrace(STDOUT, backtrace())
+end
+Sandbox.Foo()
+
+type Foo2; end
+Foo2()
 setdisplay(Foo, pd)
 
 import Graphics.render
@@ -154,13 +180,12 @@ function render(pd::PaperDisplay, x)
   println("yo ça marche")
 end
 
-
-
 Foo()
 
 end
 
-
+Foo()
+Abcd()
 whos()
 using Paper
 reload("Paper")
@@ -212,3 +237,22 @@ Paper.currentChunk
 using Blink, Gadfly
 BlinkDisplay.init()
 Gadfly.plot(x = 1:100, y = cumsum(rand(100)-0.5), Geom.line)
+
+
+function tf(x)
+  abcd() = x
+end
+
+a = tf(4)
+a
+a()
+
+b = tf(5)
+b()
+
+c = tf(125)
+c()
+
+a == c
+a == b
+methods(a)

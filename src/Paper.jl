@@ -48,7 +48,8 @@ module Paper
 
     include("server.jl")
     include("commands.jl")
-    include("rewire.jl")
+    # include("rewire.jl")
+    include("redisplay.jl")
 
     export @chunk, @session, @rewire, @loadasset
     export stationary
