@@ -1,44 +1,43 @@
 
-using Media
+module Redisplay # to separate the render of Escher from the one of Media ?
 
+using Media,  Atom
 import Media: render
+import ..addtochunk
+export rewire, @rewire
 
-
-type MauritsDisplay end
-
+type MauritsDisplay <: Display end
 const md = MauritsDisplay()
 
-# methods(setdisplay)
-for t in [Tile, Base.Markdown.MD] # t = Tile
-  setdisplay(t, md)
-  oldfunc = methods(render, (Atom.Editor, t))[1].func
+@media MauritsThing
+setdisplay(MauritsThing, md)
 
-  eval( quote
-          function render(::Atom.Editor, x::$t, $md)
-            addtochunk(x)
-          end
-        end)
+function rewire(func::Function, t::Type)
+  media(t, MauritsThing)
+  @eval function render(::MauritsDisplay, x::$t)
+        ($func)(x)
+        string(x)
+      end
+
+  @eval render(::Atom.Editor, x::$t) = render(md, x) # marche
+
 end
-  # scan every input for type t
+rewire(t::Type)  = rewire(addtochunk, t)
 
-
-function render(::Atom.Editor, x::Tile, ::MauritsDisplay)
-  addtochunk(x)
 end
 
-export render
+rewire = Redisplay.rewire
+macro rewire(args...)
+    for a in args
+        t = try
+              Main.eval(a)
+            catch e
+                error("can't evaluate $a, error $e")
+            end
+        isa(t, Type) || error("$a does not evaluate to a type")
+        rewire(t)
+    end
+end
 
-methods(render, (Atom.Editor, Any, MauritsDisplay))
-
-meths = methods(render, (Any, t, Any))
-setdisplay(Foo, MyD())
-
-render(::MyD, x::Foo) = "abcd"
-render(::Any, x::Foo, ::MyD) = "xyz"
-render(::Atom.Editor, x::Foo) = "xyz" # ça marche
-
-methods(render, (Any, Foo))
-
-methods(render)
-
-render(MyD(), Foo(12))
+# by default Tiles and Markdown will be forwarded
+@rewire Tile Base.Markdown.MD

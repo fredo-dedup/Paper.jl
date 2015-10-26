@@ -50,8 +50,9 @@ module Paper
     include("commands.jl")
     # include("rewire.jl")
     include("redisplay.jl")
+    # using Redisplay
 
-    export @chunk, @session, @rewire, @loadasset
+    export @chunk, @session, @rewire, @loadasset, rewire
     export stationary
     export writemime
 
