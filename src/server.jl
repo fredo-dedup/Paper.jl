@@ -9,7 +9,7 @@ include(Pkg.dir("Escher", "src", "cli", "serve.jl"))
 function uisocket(req)
     sn = req[:params][:session] # session name
     println("session : $sn ($(typeof(sn)))  => $(symbol(sn))")
-    session = sessions[symbol(sn)]
+    session = sessions[string(sn)]
 
     d = query_dict(req[:query])
 
@@ -53,7 +53,7 @@ function uisocket(req)
     end
 
     while isopen(sock)
-        wait(updated)
+        wait(session.updated)
         newstream = build(session)
         try
             swap!(tilestream, newstream)
@@ -64,50 +64,40 @@ function uisocket(req)
 end
 
 ### builds the Escher page structure
-function build(session::Session)
+function build(chunk::Chunk, parentname::AbstractString)
     # session = p.sessions[:abcd]
     dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |>
                         borderstyle(dashed)
     italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
 
+    currentname = parentname * "/" * chunk.name
     try
-        nbel = length(session.chunks)
+        nbel = length(chunk.children)
         # println("build, nbel = $nbel")
         if nbel==0
-            return foldl(|>,
-                         title(1,"Ready...") |> italicmessage,
-                         session.style)
+          ret = title(1, currentname) |> italicmessage
+        else
+          ret = map(c -> build(c, currentname), chunk.children)
         end
 
-        next = Array(Tile, nbel)
-        for i in 1:nbel
-            # println(i, "  ", index)
-            if length(session.chunks[i]) == 0
-                els = vbox(plaintext(session.chunknames[i]) |> italicmessage )
-            else
-                els = vbox(session.chunks[i])
-            end
-            els = foldl(|>, els, session.chunkstyles[i])
-
-            if session.chunks[i]==currentChunk
-               els = els |> dashedborder
-            end
-            next[i] = els
+        ret = ret |> chunk.styling
+        if chunk==currentChunk
+           ret = ret |> dashedborder
         end
-        return foldl(|>, vbox(next...), session.style)
-        # return foldl(|>, next, session.style)
 
+        return ret
     catch err
-        # println("catch in build()")
         bt = catch_backtrace()
         str = sprint() do io
             showerror(io, err)
             Base.show_backtrace(io, bt)
         end
-        newstream = Elem(:pre, str)
-        # newstream = vbox([str])
+        return Elem(:pre, str)
     end
 end
+
+build(session::Session) = build(session.rootchunk, "")
+build(t, ::AbstractString) = t
 
 ### initializes the server
 function init(port_hint=5555)
@@ -142,15 +132,15 @@ end
 # macro restart_server()
 # end
 
-function session(name::Symbol, style=[])
+function session(name::AbstractString, style=nothing)
     global currentSession, currentChunk
 
     haskey(sessions, name) && error("There is already a session '$name'")
 
-    newsession     = Session(style)
+    newsession     = style==nothing ? Session() : Session(style)
     sessions[name] = newsession
     currentSession = newsession
-    currentChunk   = nothing
+    currentChunk   = newsession.rootchunk
 
     serverid == nothing && init() # launch server if needed
 
@@ -161,21 +151,23 @@ function session(name::Symbol, style=[])
 end
 
 macro session(args...)
-    sn = symbol("_session$(length(sessions)+1)") # default session name
+    sn = "_session$(length(sessions)+1)" # default session name
     length(args) == 0 && return session(sn)
 
     i0 = 1
     if isa(args[1], Symbol)  # we will presume it is the session name
-        sn = args[1]
+        sn = string(args[1])
         i0 += 1
     end
 
-    style = []
+    i0 > length(args) && return session(sn)
+
+    style(t) = t
     for a in args[i0:end]
         try
-            push!(style, eval(a))
+            style(t) = style(t) |> eval(a)
         catch e
-            warn("can't evaluate $a, error $e")
+            error("can't evaluate $a, error $e")
         end
     end
     session(sn, style)
