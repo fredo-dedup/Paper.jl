@@ -56,77 +56,76 @@ module Sandbox
 reload("Paper")
 using Paper
 
-@session archi4
+@session archi
 plaintext("bare session")
-
 @chunk header
+
 container(3em, 2em) |> fillcolor("tomato")
-
 plaintext("ceci n'est pas une pipe")
-
-@chunk hoohoo hbox
-container(3em, 2em) |> fillcolor("yellow")
-
+@chunk hoohoo
 plaintext("abcd")
-
-@chunk hoohoo2 hbox fillcolor("brown")
-container(3em, 2em) |> fillcolor("lightblue")
-container(3em, 5em) |> fillcolor("red")
-
-plaintext("abcd")
-
-@chunk hoohoo2 vbox wrap maxheight(6em)
-container(3em, 2em) |> fillcolor("lightblue")
-container(3em, 5em) |> fillcolor("red")
-
-plaintext("abcd")
-
-@session
-@chunk abst
-
-@chunk abst2 fillcolor("tomato")
-plaintext("abcd")
-
-
-@chunk xyz
-@chunk xyz
+@chunk xyz vbox fillcolor("lightblue")
 plaintext("xyz")
 
-@chunk www width(4em) hbox fillcolor("yellow")
+@chunk ww hbox fillcolor("lightyellow")
 plaintext("xyz")
+@chunk ww1 vbox wrap fillcolor("lightgreen")
 
-@chunk abcd fillcolor("yellow")
+plaintext("abc")
 
 
-title(1, "abcd") |> vbox |> fillcolor("lightblue")
-
-@chunk xyz fillcolor("lightyellow")
-@chunk abcd
 
 
 end
 
+######### tree chunk struct ##########
+ex = :( ~abcd/xyz )
 
-g = x -> x |> sin |> cos
-typeof(g)
-g(0)
-g = x -> g(x) |> cos
-g(0)
-
-h(x) = foldl(|>, x, [sin, cos])
-h(0)
-h(x) = foldl(|>, x, [sin, cos, cos])
-h(0)
-
-z = Sandbox.fillcolor("yellow")
-typeof(z)
-methods(z)
-which(z, (Sandbox.Tile,))
-
-macro dt(arg)
-  dump(arg)
+macro rr(args...)
+  dump(args[1])
 end
 
-@dt ..
-@dt (abcd, qsd)
-@dt (~, xyz)
+@rr ~abcd/xyz
+@rr ~abcd/xyz/azer
+@rr "../aze"
+@rr ~ / new
+@rr (new,)
+@rr (..,..,new)
+@rr (~,new)
+@rr abcd.dqsd.qsd
+@rr ~~abcd.qsd
+
+module Paper
+function spat(ex) # ex = :(xyz.aa)
+  # ex = ex.args[1]
+  isa(ex, QuoteNode) && return ex.value
+  isa(ex, Symbol)    && return ex
+
+  isa(ex, Expr)      || error("format")
+
+  ex.head == :. && return [spat(ex.args[1]); spat(ex.args[2])]
+  ex.head == :quote && return ex.args[1]
+
+  error("format")
+end
+
+
+end
+
+spit(:(xyz.aa))
+dump(:(xyz.aa))
+
+macro rr2(path)
+  spat(path)
+end
+
+@rr2 abcd.xyz.aa
+dump(:(abcd.xyz.aa))
+spit(:(abcd.xs))
+5+6
+
+
+ex = :(azer + azfer)
+dump(ex)
+5+66
+Paper
