@@ -96,7 +96,7 @@ function build(chunk::Chunk, parentname::AbstractString)
     end
 end
 
-build(session::Session) = build(session.rootchunk, "")
+build(session::Session)    = build(session.rootchunk, "")
 build(t, ::AbstractString) = t
 
 ### initializes the server

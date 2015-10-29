@@ -1,28 +1,28 @@
 
 module Redisplay # to separate the render of Escher from the one of Media ?
 
-using Media,  Atom
-import Media: render
-import ..addtochunk
-export rewire, @rewire
+    using Media,  Atom
+    import Media: render
+    import ..addtochunk
+    export rewire, @rewire
 
-type MauritsDisplay <: Display end
-const md = MauritsDisplay()
+    type MauritsDisplay <: Display end
+    const md = MauritsDisplay()
 
-@media MauritsThing
-setdisplay(MauritsThing, md)
+    @media MauritsThing
+    setdisplay(MauritsThing, md)
 
-function rewire(func::Function, t::Type)
-  media(t, MauritsThing)
-  @eval function render(::MauritsDisplay, x::$t)
-        ($func)(x)
-        string(x)
-      end
+    function rewire(func::Function, t::Type)
+      media(t, MauritsThing)
+      @eval function render(::MauritsDisplay, x::$t)
+            ($func)(x)
+            string(x)
+          end
 
-  @eval render(::Atom.Editor, x::$t) = render(md, x) # marche
+      @eval render(::Atom.Editor, x::$t) = render(md, x)
 
-end
-rewire(t::Type)  = rewire(addtochunk, t)
+    end
+    rewire(t::Type)  = rewire(addtochunk, t)
 
 end
 
@@ -40,4 +40,4 @@ macro rewire(args...)
 end
 
 # by default Tiles and Markdown will be forwarded
-@rewire Tile Base.Markdown.MD
+@rewire Escher.Tile Base.Markdown.MD
