@@ -18,19 +18,6 @@ macro chunk(args...)
                error("can't evaluate formatting functions, error $e")
              end
 
-  # for a in args[i0:end]
-  #     f = try
-  #         eval(a)
-  #     catch e
-  #         error("can't evaluate $a, error $e")
-  #     end
-  #     if isa(f, Function)
-  #       nf = style==nothing ? f : x -> x |> style |> f
-  #       style = nf
-  #     else
-  #       error("$a is not a function")
-  #     end
-  # end
   chunk(cn, style)
 end
 

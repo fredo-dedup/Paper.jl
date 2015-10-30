@@ -162,14 +162,12 @@ macro session(args...)
 
     i0 > length(args) && return session(sn)
 
-    style(t) = t
-    for a in args[i0:end]
-        try
-            style(t) = style(t) |> eval(a)
-        catch e
-            error("can't evaluate $a, error $e")
-        end
-    end
+    style(x) = try
+                 foldl(|>, x, map(eval, args[i0:end]))
+               catch e
+                 error("can't evaluate formatting functions, error $e")
+               end
+
     session(sn, style)
 end
 
@@ -187,6 +185,4 @@ macro loadasset(args...)
     end
 end
 
-# TODO
-# macro close_session(name::Symbol=currentSession)
-# end
+# TODO : close_session, switch session
