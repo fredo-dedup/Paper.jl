@@ -1,5 +1,5 @@
 
-module Redisplay # to separate the render of Escher from the one of Media ?
+module Redisplay # to separate the render of Escher from the one of Media
 
     using Media,  Atom
     import Media: render

@@ -131,19 +131,19 @@ dump(ex)
 
 end
 
-reload("ReverseDiffSource")
-using ReverseDiffSource
-i = 1
-ex = ReverseDiffSource.rdiff( :( exp(x)[i] ), x=[1.,2] )
-@eval function mex(x)
-        res = Array(Float64, length(x), length(x)) # will hold the result
-        for i in 1:length(x)
-          _ , res[i,:] = $ex
-        end
-        res
-      end
 
-mex([2.])
-mex(ones(5))
+############ tree chunk  #{###########
 
-ex
+module A
+using Paper
+
+@session
+
+@newchunk abcd
+@newchunk xys
+plaintext("abcdefqmfdgjqfg")
+
+Paper.currentSession.rootchunk
+
+
+end

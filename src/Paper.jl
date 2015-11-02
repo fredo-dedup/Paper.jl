@@ -36,45 +36,18 @@ module Paper
 
     import Compose
 
+
+    include("chunk.jl")
+    include("session.jl")
+
     serverid       = nothing      # server Task
 
-    type Chunk
-      name::AbstractString
-      children::Vector
-      parent::Nullable{Chunk}
-      styling::Function
-    end
-    Chunk() = Chunk(string(gensym("chunk")))
-    Chunk(style::Function) = Chunk(string(gensym("chunk")), style)
-    Chunk(name::AbstractString) = Chunk(name, vbox) # vertical layout default
-    Chunk(n::AbstractString, st::Function) =
-      Chunk(n, Any[], Nullable{Chunk}(), st)
-
-    currentChunk   = nothing      # active chunk
-
-
-    type Session
-      rootchunk::Chunk
-      window::Window
-      updated::Condition
-
-      function Session(st::Function=vbox) # vertical layout default
-        s = new()
-        s.rootchunk = Chunk("", st)
-        s.updated = Condition()
-        s
-      end
-    end
-
-    sessions = Dict{UTF8String, Session}()
-    currentSession = nothing      # active session
-
     include("server.jl")
-    include("commands.jl")
+    # include("commands.jl")
     # include("rewire.jl")
     include("redisplay.jl")
 
-    export @chunk, @session, @rewire, @loadasset, rewire
+    export @newchunk, @tochunk, @session, @rewire, @loadasset, rewire
     export stationary
     # export writemime
 
