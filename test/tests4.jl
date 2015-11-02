@@ -128,6 +128,7 @@ spit(:(abcd.xs))
 ex = :(azer + azfer)
 dump(ex)
 5+66
+<<<<<<< Updated upstream
 
 end
 
@@ -147,3 +148,30 @@ mex([2.])
 mex(ones(5))
 
 ex
+=======
+Paper
+
+function getW33(k::Float64)
+    sqrt2l= sqrt(2.0)
+    t2 = k*k
+    t3 = acos(t2 - 1.0)
+    t4 = 2.0 - t2
+    t6 = 2*π - t3
+    t5 = 1.0/t4
+    (t6 * sqrt(t5) - k)*t5
+end
+
+k = 0.5
+getW33(k)
+
+dapprox(f, x, ϵ=1e-8) = (f(x+ϵ)-f(x)) / ϵ
+getW33(k+1e-10)
+
+dapprox(getW33, 0.5)
+
+using ReverseDiffSource
+
+@deriv_rule acos(x::Real) x -ds / sqrt(1-x*x)
+dget = rdiff(getW33, (0.5,))
+dget(0.5)
+>>>>>>> Stashed changes
