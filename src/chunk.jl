@@ -27,8 +27,10 @@ currentChunk   = nothing      # no active chunk at startup
 ############ user commands ##################
 
 # finds the chunk at path specified in ns
+# ns = [:abcd;] ; startelem = parentChunk
 function findelem(ns::Vector, startelem::Chunk=currentSession.rootchunk)
   for e in startelem.children
+    isa(e, Chunk) || continue
     e.name == ns[1] && return length(ns)==1 ? e : findelem(ns[2:end], e)
   end
   return nothing
@@ -61,14 +63,22 @@ macro tochunk(path)
     currentChunk = ns
 end
 
-macro newchunk(path, styling...)
+macro newchunk(path, styling...) # path = :abcd
     cp = try
             esplit(path)
          catch
             error("not a valid path")
          end
-    parent = length(cp) == 1 ? currentChunk : # just the leaf name is given
-                               findelem(cp[1:end-1])
+
+    if length(cp) == 1 # just the leaf name is given
+      if currentChunk == currentSession.rootchunk # toplevel => create inside
+        parent = currentSession.rootchunk
+      else
+        parent = currentChunk.parent # create sibling
+      end
+    else
+      parent = findelem(cp[1:end-1])
+    end
 
     name = cp[end]
 
@@ -81,63 +91,22 @@ macro newchunk(path, styling...)
     newchunk(parent, name, style)
 end
 
-# macro chunk(args...)
-#   cn = "_chunk$(length(currentChunk.children)+1)" # default chunk name
-#   length(args) == 0 && return chunk(cn)
-#
-#   i0 = 1
-#   if isa(args[1], Symbol)  # we will presume it is the session name
-#       cn = string(args[1])
-#       i0 += 1
-#   end
-#
-#   i0 > length(args) && return chunk(cn)
-#
-#   style(x) = try
-#                foldl(|>, x, map(eval, args[i0:end]))
-#              catch e
-#                error("can't evaluate formatting functions, error $e")
-#              end
-#
-#   chunk(cn, style)
-# end
-
-# function chunk(name, style=nothing)
-#     global currentChunk
-#
-#     currentSession==nothing && session("session") # open new session
-#
-#     # if name in currentSession.chunknames # replace existing chunk
-#     #     index = indexin([name], currentSession.chunknames)[1]
-#     #     currentSession.chunks[index] = []
-#     #     currentSession.chunkstyles[index] = style
-#     #     currentChunk = currentSession.chunks[index]
-#     # else
-#         nc = style==nothing ? Chunk(name) : Chunk(name, style)
-#         push!(currentChunk.children, nc)
-#         nc.parent = currentChunk
-#         currentChunk = nc
-#     # end
-#
-#     notify(currentSession.updated)
-#     nothing
-# end
 
 function newchunk(parentChunk, name, style=nothing)
+  # parentChunk = currentSession.rootchunk
     global currentChunk
 
-    currentSession==nothing && session("session") # open new session
-
-    tc = findelem([name;], parentChunk)
     nc = style==nothing ? Chunk(string(name)) : Chunk(string(name), style)
     nc.parent = parentChunk
+
+    tc = findelem([name;], parentChunk)
     if tc == nothing # new chunk
         push!(parentChunk.children, nc)
-    else
+    else # replace existing chunk
         idx = findfirst(parentChunk.children, tc)
         parentChunk[idx] = nc
     end
-    currentChunk = parentChunk
+    currentChunk = nc
 
     notify(currentSession.updated)
     nothing
@@ -148,8 +117,7 @@ function addtochunk(t)
     # Base.show_backtrace(STDOUT, backtrace())
     # println()
 
-    currentChunk==nothing &&
-      error("No active session yet")
+    currentChunk==nothing && error("No active session yet")
 
     push!(currentChunk.children, t)
     notify(currentSession.updated)

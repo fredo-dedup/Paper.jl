@@ -132,18 +132,22 @@ dump(ex)
 end
 
 
-############ tree chunk  #{###########
+############ tree chunk  ###########
+
+module A; end
 
 module A
+reload("Paper")
 using Paper
 
-@session
+@session tree2
 
 @newchunk abcd
 @newchunk xys
 plaintext("abcdefqmfdgjqfg")
+container(4em, 5em)
 
 Paper.currentSession.rootchunk
-
+show(Paper.currentSession)
 
 end

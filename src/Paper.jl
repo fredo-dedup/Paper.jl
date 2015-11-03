@@ -51,4 +51,25 @@ module Paper
     export stationary
     # export writemime
 
+
+    import Base.show
+    const indent = 2
+    function show(io::IO, s::Session)
+       show(s.rootchunk)
+
+    end
+
+    function show(io::IO, c::Chunk; indent=0)
+       spad = " " #^ indent
+       println(io, spad, "$(c.name) ($(length(c.children)) elements) : ")
+       for e in c.children
+           if isa(e, Chunk)
+               show(io, e, indent=indent+2)
+           else
+               println(io, spad, "  - ", typeof(e))
+           end
+       end
+    end
+
+    export show
 end
