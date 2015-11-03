@@ -140,14 +140,29 @@ module A
 reload("Paper")
 using Paper
 
-@session tree2
+@session tree6
 
 @newchunk abcd
+@newchunk abcd.efg
 @newchunk xys
+@newchunk xys.aaa
+@newchunk aaa
+
+@tochunk root.abcd
+
 plaintext("abcdefqmfdgjqfg")
 container(4em, 5em)
 
+md"ceci est du *markdown*, ddddddd"
+
+cc = Paper.findelem(["abcd";])
+Paper.currentChunk
+
+cc = Paper.findelem(["xys";])
+cc.styling
+
+
+
 Paper.currentSession.rootchunk
-show(Paper.currentSession)
 
 end

@@ -11,7 +11,7 @@ type Session
 
   function Session(st::Function=vbox) # vertical layout default
     s = new()
-    s.rootchunk = Chunk("", st)
+    s.rootchunk = Chunk(:root, st)
     s.updated = Condition()
     s
   end
@@ -23,10 +23,33 @@ currentSession = nothing      # no active active session at startup
 
 ############ user commands ##################
 
+macro session(args...)
+    sn = gensym("session") # default session name
+    length(args) == 0 && return session(sn)
+
+    i0 = 1
+    if isa(args[1], Symbol)  # we will presume it is the session name
+        sn = string(args[1])
+        i0 += 1
+    end
+
+    i0 > length(args) && return session(sn)
+
+    sf = try
+             map(eval, args[i0:end])
+         catch e
+             error("can't evaluate formatting functions, error $e")
+         end
+    style(x) = foldl(|>, x, sf)
+    session(sn, style)
+end
+
 function session(name::AbstractString, style=nothing)
     global currentSession, currentChunk
 
-    haskey(sessions, name) && error("There is already a session '$name'")
+    if haskey(sessions, name)
+        info("resetting existing session $name")
+    end
 
     newsession     = style==nothing ? Session() : Session(style)
     sessions[name] = newsession
@@ -41,26 +64,6 @@ function session(name::AbstractString, style=nothing)
     @windows_only run(`cmd /c start $fulladdr`)
 end
 
-macro session(args...)
-    sn = "_session$(length(sessions)+1)" # default session name
-    length(args) == 0 && return session(sn)
-
-    i0 = 1
-    if isa(args[1], Symbol)  # we will presume it is the session name
-        sn = string(args[1])
-        i0 += 1
-    end
-
-    i0 > length(args) && return session(sn)
-
-    style(x) = try
-                 foldl(|>, x, map(eval, args[i0:end]))
-               catch e
-                 error("can't evaluate formatting functions, error $e")
-               end
-
-    session(sn, style)
-end
 
 # TODO : close_session, switch session
 
@@ -73,7 +76,8 @@ function build(chunk::Chunk, parentname::AbstractString)
                         borderstyle(dashed)
     italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
 
-    currentname = parentname * "/" * chunk.name
+    currentname = parentname=="" ?  string(chunk.name) :
+                    parentname * "." * string(chunk.name)
     try
         nbel = length(chunk.children)
         # println("build, nbel = $nbel")

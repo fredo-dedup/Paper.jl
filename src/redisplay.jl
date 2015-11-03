@@ -16,7 +16,7 @@ module Redisplay # to separate the render of Escher from the one of Media
       media(t, MauritsThing)
       @eval function render(::MauritsDisplay, x::$t)
             ($func)(x)
-            string(x)
+            string(typeof(x))
           end
 
       @eval render(::Atom.Editor, x::$t) = render(md, x)

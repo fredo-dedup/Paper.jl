@@ -5,26 +5,21 @@
 ######## The Chunk type #########
 
 type Chunk
-  name::AbstractString
+  name::Symbol
   children::Vector
-  parent::Nullable{Chunk}
+  parent
   styling::Function
 end
-Chunk() = Chunk(string(gensym("chunk")))
-Chunk(style::Function) = Chunk(string(gensym("chunk")), style)
-Chunk(name::AbstractString) = Chunk(name, vbox) # vertical layout default
-Chunk(n::AbstractString, st::Function) =
-  Chunk(n, Any[], Nullable{Chunk}(), st)
+Chunk() = Chunk(gensym("chunk"))
+Chunk(style::Function) = Chunk(gensym("chunk"), style)
+Chunk(name::Symbol) = Chunk(name, vbox) # vertical layout default
+Chunk(n::Symbol, st::Function) =
+  Chunk(n, Any[], nothing, st)
 
 
 currentChunk   = nothing      # no active chunk at startup
 
 ######### Chunk find / create functions #####
-
-
-
-
-############ user commands ##################
 
 # finds the chunk at path specified in ns
 # ns = [:abcd;] ; startelem = parentChunk
@@ -63,7 +58,7 @@ macro tochunk(path)
     currentChunk = ns
 end
 
-macro newchunk(path, styling...) # path = :abcd
+macro newchunk(path, styling...) # path = :(xys.aaa)
     cp = try
             esplit(path)
          catch
@@ -72,39 +67,45 @@ macro newchunk(path, styling...) # path = :abcd
 
     if length(cp) == 1 # just the leaf name is given
       if currentChunk == currentSession.rootchunk # toplevel => create inside
-        parent = currentSession.rootchunk
+        parent = currentChunk
       else
         parent = currentChunk.parent # create sibling
       end
     else
       parent = findelem(cp[1:end-1])
+      parent==nothing && error("position not found")
     end
 
     name = cp[end]
 
-    style(x) = try
-                foldl(|>, x, map(eval, styling))
-               catch e
-                error("can't evaluate formatting functions, error $e")
-               end
-
-    newchunk(parent, name, style)
+    if length(styling)==0
+        newchunk(parent, name)
+    else
+        sf = try
+                 map(eval, styling)
+             catch e
+                 error("can't evaluate formatting functions, error $e")
+             end
+        style(x) = foldl(|>, x, sf)
+        newchunk(parent, name, style)
+    end
 end
 
 
 function newchunk(parentChunk, name, style=nothing)
-  # parentChunk = currentSession.rootchunk
+  # parentChunk = currentChunk
     global currentChunk
 
-    nc = style==nothing ? Chunk(string(name)) : Chunk(string(name), style)
+    nc = style==nothing ? Chunk(name) : Chunk(name, style)
     nc.parent = parentChunk
 
     tc = findelem([name;], parentChunk)
     if tc == nothing # new chunk
         push!(parentChunk.children, nc)
     else # replace existing chunk
+        info("resetting existing chunk $name")
         idx = findfirst(parentChunk.children, tc)
-        parentChunk[idx] = nc
+        parentChunk.children[idx] = nc
     end
     currentChunk = nc
 
@@ -127,10 +128,10 @@ end
 function stationary(f::Function, signals::Signal...)
     st = lift(f, signals...)
     addtochunk(empty)
-    ch   = currentChunk
-    slot = length(currentChunk)
+    cc = currentChunk
+    slot = length(currentChunk.children)
     lift(st) do nt
-        ch[slot] = nt
+        cc.children[slot] = nt
         notify(currentSession.updated)
     end
 end
