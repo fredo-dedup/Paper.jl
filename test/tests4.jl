@@ -41,43 +41,6 @@ wrap(center)
 container(4em, 4em) |> fillcolor("blue")
 end
 
-######### new archi ##########
-reload("Paper")
-
-a = fillcolor("tomato")
-flow(horizontal) |> fillcolor("lightyellow")
-fillcolor(flow(horizontal), "lightyellow")
-typeof(a)
-styl(x) = x |> flow(horizontal) |> fillcolor("lightyellow")
-
-module Sandbox ; end
-
-module Sandbox
-reload("Paper")
-using Paper
-
-@session archi
-plaintext("bare session")
-@chunk header
-
-container(3em, 2em) |> fillcolor("tomato")
-plaintext("ceci n'est pas une pipe")
-@chunk hoohoo
-plaintext("abcd")
-@chunk xyz vbox fillcolor("lightblue")
-plaintext("xyz")
-
-@chunk ww hbox fillcolor("lightyellow")
-plaintext("xyz")
-@chunk ww1 vbox wrap fillcolor("lightgreen")
-
-plaintext("abc")
-
-
-
-
-end
-
 ######### tree chunk struct ##########
 ex = :( ~abcd/xyz )
 
@@ -95,42 +58,6 @@ end
 @rr abcd.dqsd.qsd
 @rr ~~abcd.qsd
 
-module Paper
-function spat(ex) # ex = :(xyz.aa)
-  # ex = ex.args[1]
-  isa(ex, QuoteNode) && return ex.value
-  isa(ex, Symbol)    && return ex
-
-  isa(ex, Expr)      || error("format")
-
-  ex.head == :. && return [spat(ex.args[1]); spat(ex.args[2])]
-  ex.head == :quote && return ex.args[1]
-
-  error("format")
-end
-
-
-end
-
-spit(:(xyz.aa))
-dump(:(xyz.aa))
-
-macro rr2(path)
-  spat(path)
-end
-
-@rr2 abcd.xyz.aa
-dump(:(abcd.xyz.aa))
-spit(:(abcd.xs))
-5+6
-
-
-ex = :(azer + azfer)
-dump(ex)
-5+66
-
-end
-
 
 ############ tree chunk  ###########
 
@@ -140,13 +67,15 @@ module A
 reload("Paper")
 using Paper
 
-@session tree6
+@session tree2 vbox pad(1em)
 
 @newchunk abcd
 @newchunk abcd.efg
 @newchunk xys
 @newchunk xys.aaa
 @newchunk aaa
+
+@newchunk bbb
 
 @tochunk root.abcd
 
@@ -161,8 +90,47 @@ Paper.currentChunk
 cc = Paper.findelem(["xys";])
 cc.styling
 
-
-
 Paper.currentSession.rootchunk
 
 end
+
+############### module logic  #################
+
+f() = "A"
+
+methods(f)
+f()
+
+module B
+  import Main.f
+  println(f())
+  f() = "B"
+  println(f())
+  methods(f)
+end
+
+f()  # f de Main est modifié à cause du import qui lie les fonctions
+
+x = 1
+module C
+  x = 2
+  macro what1(arg)
+    eval(arg)
+  end
+  macro what2(arg)
+    eval(current_module(), arg)
+  end
+  macro what3(arg)
+    eval(Main, arg)
+  end
+end
+
+C.@what(:(12))
+C.@what(:(current_module()))
+
+C.@what1 x
+C.@what2 x
+C.@what3 x
+
+x
+C.x

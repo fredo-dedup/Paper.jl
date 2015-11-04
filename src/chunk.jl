@@ -82,7 +82,7 @@ macro newchunk(path, styling...) # path = :(xys.aaa)
         newchunk(parent, name)
     else
         sf = try
-                 map(eval, styling)
+                 map(current_module().eval, styling)
              catch e
                  error("can't evaluate formatting functions, error $e")
              end
