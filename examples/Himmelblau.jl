@@ -1,6 +1,8 @@
 using Paper
 using Colors
 
+plaintext("current_module() : $(current_module())")
+
 # import Gadfly to show plots
 using Gadfly
 

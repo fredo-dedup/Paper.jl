@@ -17,9 +17,12 @@ type Session
   end
 end
 
-sessions = Dict{UTF8String, Session}()
+sessions = Dict{AbstractString, Session}()
 currentSession = nothing      # no active active session at startup
 
+function show(io::IO, s::Session)
+   show(s.rootchunk)
+end
 
 ############ user commands ##################
 

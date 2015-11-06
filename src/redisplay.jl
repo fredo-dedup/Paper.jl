@@ -1,10 +1,8 @@
 
 module Redisplay # to separate the render of Escher from the one of Media
 
-    using Media,  Atom
+    using Media, Atom
     import Media: render
-    import ..addtochunk
-    export rewire, @rewire
 
     type MauritsDisplay <: Display end
     const md = MauritsDisplay()
@@ -22,17 +20,21 @@ module Redisplay # to separate the render of Escher from the one of Media
       @eval render(::Atom.Editor, x::$t) = render(md, x)
 
     end
-    rewire(t::Type)  = rewire(addtochunk, t)
+
+    isrewired(t::Type) = getdisplay(t, Media._pool) == md
 
 end
 
-rewire = Redisplay.rewire
+import .Redisplay: rewire, isrewired
+
+rewire(t::Type)  = rewire(addtochunk, t)
+
 macro rewire(args...)
     for a in args
         t = try
-              Main.eval(a)
+              eval(current_module(), a)
             catch e
-                error("can't evaluate $a, error $e")
+              error("can't evaluate $a, error $e")
             end
         isa(t, Type) || error("$a does not evaluate to a type")
         rewire(t)

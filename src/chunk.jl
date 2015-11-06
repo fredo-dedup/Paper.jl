@@ -16,6 +16,19 @@ Chunk(name::Symbol) = Chunk(name, vbox) # vertical layout default
 Chunk(n::Symbol, st::Function) =
   Chunk(n, Any[], nothing, st)
 
+const δindent = 2
+
+function show(io::IO, c::Chunk; indent=0)
+   spad = " " ^ indent
+   println(io, spad, "'$(c.name)' ($(length(c.children)) elements) : ")
+   for e in c.children
+       if isa(e, Chunk)
+           show(io, e, indent = indent + δindent)
+       else
+           println(io, spad, "  - ", typeof(e))
+       end
+   end
+end
 
 currentChunk   = nothing      # no active chunk at startup
 
@@ -82,7 +95,8 @@ macro newchunk(path, styling...) # path = :(xys.aaa)
         newchunk(parent, name)
     else
         sf = try
-                 map(current_module().eval, styling)
+                #  map(current_module().eval, styling)
+                 map(x -> eval(current_module(),x), styling)
              catch e
                  error("can't evaluate formatting functions, error $e")
              end

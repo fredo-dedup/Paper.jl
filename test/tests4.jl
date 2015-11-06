@@ -134,3 +134,45 @@ C.@what3 x
 
 x
 C.x
+
+#####   Compilation function : compile()
+
+script = IOBuffer("""
+ using Paper
+ a + 3
+ @session compilation
+  @newchunk test
+ container(3em, 3em) |> fillcolor("tomato")
+ 4+5
+  """)
+
+module A;end
+module A
+reload("Paper")
+using Paper
+isrewired(Tile)
+
+@session A
+@newchunk ab vbox pad(1em)
+title(2, "test test")
+
+@newchunk cd x->map(pad(1em),x) vbox
+title(2, "test test")
+
+pwd()
+compile("../examples/Himmelblau.jl")
+
+script = IOBuffer("""
+ using Paper
+ @session compilation
+ @newchunk test
+ plaintext("current_module() : $(current_module())")
+ @newchunk abcd vbox fillcolor("lightgray")
+ t = container(100cent, 10px) |> fillcolor("tomato");
+ plaintext(4+5)
+ """)
+
+compile(script)
+
+Base.binding_module(:(@newchunk))
+end
