@@ -39,7 +39,7 @@ macro session(args...)
     i0 > length(args) && return session(sn)
 
     sf = try
-             map(current_module().eval, args[i0:end])
+             map(x -> eval(current_module(),x), args[i0:end])
          catch e
              error("can't evaluate formatting functions, error $e")
          end

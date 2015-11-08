@@ -1,9 +1,9 @@
 using Paper
 using Colors
 
-plaintext("current_module() : $(current_module())")
+println("current_module() : $(current_module())")
 
-# import Gadfly to show plots
+# import Gadfly for plots
 using Gadfly
 
 # indicate that Gadfly plots should be sent to the browser
@@ -54,7 +54,7 @@ The function is named after **David Mautner Himmelblau** (1924–2011), who intr
 # style elements can be defined as functions for multiple reuse for example
 plotstyle(x) = x |> minwidth(32em) |> border(solid, 0.1em, colorant"black")
 
-@newchunk desc.plot vbox packacross(center) Main.plotstyle
+@newchunk desc.plot vbox packacross(center) plotstyle
 
 title(1, "Contour Plot")
 

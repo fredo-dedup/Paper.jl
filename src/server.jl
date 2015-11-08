@@ -92,14 +92,13 @@ function init(port_hint=5555)
     serverid = @async serve(static, comm, port)
 end
 
-# TODO
-# macro restart_server()
-# end
-
 macro loadasset(args...)
     currentSession == nothing && error("No session active yet, run @session")
-    currentSession.window == nothing &&
-        error("No window for this session yet")
+    isdefined(Paper.currentSession, :window) || sleep(1.) # give time if needed
+    isdefined(Paper.currentSession, :window) || sleep(1.) # give time if needed
+    isdefined(Paper.currentSession, :window) || sleep(1.) # give time if needed
+    isdefined(Paper.currentSession, :window) || sleep(1.) # give time if needed
+    isdefined(Paper.currentSession, :window) || error("No window for this session yet")
 
     for a in args
         if isa(a, AbstractString)

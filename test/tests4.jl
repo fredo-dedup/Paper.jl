@@ -16,82 +16,67 @@ current_module()
 whos(Sandbox)
 # Paper.currentChunk
 @session ttitle
-@chunk testtffest
+@newchunk testtffest
 # @rewire Tile
 plaintext("arg!!!")
 
 container(2em, 4em) |> fillcolor("lightyellow")
 
-ab = [container(2em, 4em) |> fillcolor("lightyellow"),
-      container(2em, 4em) |> fillcolor("lightblue"),
-      container(3em, 2em) |> fillcolor("tomato"),
-      container(5em, 6em) |> fillcolor("magenta")]
+@newchunk flox flow(horizontal) wrap maxwidth(10em)
 
-ab |> flow(vertical) |> wrap |> maxheight(5em)
-@chunk maxwidth(10em)
-ab |> flow(horizontal) |> wrap
+container(2em, 4em) |> fillcolor("lightyellow")
+container(2em, 4em) |> fillcolor("lightblue")
+container(3em, 2em) |> fillcolor("tomato")
+container(5em, 6em) |> fillcolor("magenta")
 
-@nchunk width(12cm) flow(horizontal) wrap
-width(12cm)
-flow(horizontal)
-wrap(center)
+@newchunk flox
+@loadasset "widgets"
 
-@chunk maxwidth(2cm) width(12cm) flow(horizontal) wrap
+slider(0:0.1:20)
+error("oqisd")
+s = Input(false)
+plaintext("abcd")
+
+stationary(s) do sᵥ
+  plaintext(sᵥ)
+end
+push!(s, 45)
+
+x = Input(1.)
+slider(0:0.1:10) >>> x
+fieldnames(Signal)
+typeof(x)
+
+
+
+stationary(s) do _
+  lift(x) do xv
+    plaintext(xv)
+  end
+end
+
+αᵗ = Input(1.0)
+βᵗ = Input(1.0)
+
+vbox(md"## Static Plot",
+    drawing(4Gadfly.inch, 2Gadfly.inch, plot(sin, 0, 25)),
+    md"## Dynamic plot",
+    hbox("Alpha: " |>
+        width(4em), slider(1:100) >>> αᵗ) |>
+        packacross(center),
+    hbox("Beta: "  |>
+        width(4em), slider(1:100) >>> βᵗ) |>
+        packacross(center),
+    lift(αᵗ, βᵗ) do α, β
+        plot_beta(α,β) |> drawing(4Gadfly.inch, 3Gadfly.inch)
+    end
+) |> pad(2em)
+
+
+
+
 
 container(4em, 4em) |> fillcolor("blue")
-end
-
-######### tree chunk struct ##########
-ex = :( ~abcd/xyz )
-
-macro rr(args...)
-  dump(args[1])
-end
-
-@rr ~abcd/xyz
-@rr ~abcd/xyz/azer
-@rr "../aze"
-@rr ~ / new
-@rr (new,)
-@rr (..,..,new)
-@rr (~,new)
-@rr abcd.dqsd.qsd
-@rr ~~abcd.qsd
-
-
-############ tree chunk  ###########
-
-module A; end
-
-module A
-reload("Paper")
-using Paper
-
-@session tree2 vbox pad(1em)
-
-@newchunk abcd
-@newchunk abcd.efg
-@newchunk xys
-@newchunk xys.aaa
-@newchunk aaa
-
-@newchunk bbb
-
-@tochunk root.abcd
-
-plaintext("abcdefqmfdgjqfg")
-container(4em, 5em)
-
-md"ceci est du *markdown*, ddddddd"
-
-cc = Paper.findelem(["abcd";])
-Paper.currentChunk
-
-cc = Paper.findelem(["xys";])
-cc.styling
-
-Paper.currentSession.rootchunk
-
 end
 
 ############### module logic  #################
@@ -156,11 +141,13 @@ isrewired(Tile)
 @newchunk ab vbox pad(1em)
 title(2, "test test")
 
-@newchunk cd x->map(pad(1em),x) vbox
+@newchunk cd x -> map(pad(1em),x) vbox
 title(2, "test test")
 
 pwd()
-compile("../examples/Himmelblau.jl")
+compile(joinpath(Pkg.dir("Paper"), "examples/Himmelblau.jl"))
+
+@loadasset "tex"
 
 script = IOBuffer("""
  using Paper
@@ -173,6 +160,11 @@ script = IOBuffer("""
  """)
 
 compile(script)
+
+compile(joinpath(Pkg.dir("Paper"), "test/compil_ex.jl"))
+
+Paper.sessions
+
 
 Base.binding_module(:(@newchunk))
 end
