@@ -1,25 +1,25 @@
 using Paper
 using Colors
 
-println("current_module() : $(current_module())")
-
 # import Gadfly for plots
 using Gadfly
 
 # indicate that Gadfly plots should be sent to the browser
 @rewire Gadfly.Plot
 
+### Start a new session
 @session Himmelblau vbox pad(1em)
 @loadasset "tex"  # TeΧ equations will be needed
 
+### header chunk with a title
 @newchunk header vbox packacross(center)
 title(3, "Himmelblau's function")
 vskip(2em)
 
-# start a chunk with an horizontal flow
+### start a new chunk with an horizontal flow
 @newchunk desc hbox
 
-# start an inner chunk, with a vertical flow
+### start an inner chunk, with a vertical flow for the definition
 @newchunk desc.text vbox packacross(center) shrink  # maxwidth(50cent)
 
 title(1, "Definition")
@@ -49,7 +49,8 @@ written in terms of radicals, the expressions are somewhat complicated.
 The function is named after **David Mautner Himmelblau** (1924–2011), who introduced it.
 """
 
-# start the second inner chunk showing the plot on the right side of Definition
+##### start the second inner chunk showing the plot on the
+#       right side of the definition
 
 # style elements can be defined as functions for multiple reuse for example
 plotstyle(x) = x |> minwidth(32em) |> border(solid, 0.1em, colorant"black")

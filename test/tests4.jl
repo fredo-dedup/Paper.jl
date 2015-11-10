@@ -4,19 +4,19 @@ Media.input[]
 
 ################### Paper  #################
 
-module Sandbox
+module A
   reload("Paper")
   using Paper
 end
 
-module Sandbox
+module A
 reload("Paper")
 using Paper
 current_module()
-whos(Sandbox)
+
 # Paper.currentChunk
 @session ttitle
-@newchunk testtffest
+@newchunk test
 # @rewire Tile
 plaintext("arg!!!")
 
@@ -34,33 +34,42 @@ container(5em, 6em) |> fillcolor("magenta")
 
 slider(0:0.1:20)
 error("oqisd")
-s = Input(false)
+s = Input(10.)
 plaintext("abcd")
 
 stationary(s) do sᵥ
   plaintext(sᵥ)
 end
 push!(s, 45)
+push!(s, 30)
+
+Paper.Elem(:h1, "Hello, World!")
+
+
 
 x = Input(1.)
 slider(0:0.1:10) >>> x
-fieldnames(Signal)
-typeof(x)
+subscribe(slider(0:10), x)
+
+push!(x,3)
+push!(x,4)
+
+lift(x->println("lifted $x"), x)
+
+slider(0:10)
+
+typeof(ws)
+isa(ws, Tile)
+
+vbox(ws)
 
 
-
-stationary(s) do _
-  lift(x) do xv
-    plaintext(xv)
-  end
-end
+@newchunk flux
 
 αᵗ = Input(1.0)
 βᵗ = Input(1.0)
 
-vbox(md"## Static Plot",
-    drawing(4Gadfly.inch, 2Gadfly.inch, plot(sin, 0, 25)),
-    md"## Dynamic plot",
+vbox(md"## Dynamic plot",
     hbox("Alpha: " |>
         width(4em), slider(1:100) >>> αᵗ) |>
         packacross(center),
@@ -68,13 +77,22 @@ vbox(md"## Static Plot",
         width(4em), slider(1:100) >>> βᵗ) |>
         packacross(center),
     lift(αᵗ, βᵗ) do α, β
-        plot_beta(α,β) |> drawing(4Gadfly.inch, 3Gadfly.inch)
+        plaintext("α = $α, β = $β")
     end
-) |> pad(2em)
+    ) |> pad(2em)
 
+hbox("Alpha: " |>
+    width(4em), slider(1:100) >>> αᵗ) |>
+    packacross(center)
+hbox("Beta: "  |>
+    width(4em), slider(1:100) >>> βᵗ) |>
+    packacross(center)
 
+stationary(αᵗ, βᵗ) do α, β
+    plaintext("α = $α, β = $β")
+end
 
-
+@loadasset "widgets"
 
 container(4em, 4em) |> fillcolor("blue")
 end
@@ -146,6 +164,8 @@ title(2, "test test")
 
 pwd()
 compile(joinpath(Pkg.dir("Paper"), "examples/Himmelblau.jl"))
+
+whos()
 
 @loadasset "tex"
 
