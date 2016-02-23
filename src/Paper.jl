@@ -46,6 +46,26 @@ module Paper
 
     serverid = nothing      # server Task
 
+
+    #-- Escher extension : add column layout function -------------------
+    Escher.@api columns => (Columns <: Tile) begin
+        doc("Set the number of columns.")
+        arg(ncol::Int, doc="The number.")
+        arg(gap::Escher.Length=1Escher.px, doc="The gap size between columns.")
+        curry(tiles::Escher.TileList, doc="A tile or a vector of tiles.")
+    end
+
+    Escher.render(t::Columns, state) =
+        Escher.wrapmany(t.tiles, :span, state) &
+            Escher.style(Escher.@d(symbol("column-count")         => t.ncol,
+                     symbol("-webkit-column-count") => t.ncol,
+                     symbol("-moz-column-count")    => t.ncol,
+                     symbol("column-gap")           => t.gap,
+                     symbol("-webkit-column-gap")   => t.gap,
+                     symbol("-moz-column-gap")      => t.gap))
+
+    export columns
+
     export @newchunk, @tochunk, @session, @loadasset
     export @rewire, rewire, isrewired
     export stationary, compile

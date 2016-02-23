@@ -17,7 +17,7 @@ module Redisplay # to separate the render of Escher from the one of Media
             string(typeof(x))
           end
 
-      @eval render(::Atom.Editor, x::$t) = render(md, x)
+      # @eval render(::Atom.Editor, x::$t) = (println("there") ; render(md, x))
 
     end
 
@@ -42,4 +42,4 @@ macro rewire(args...)
 end
 
 # by default Tiles and Markdown will be forwarded
-@rewire Escher.Tile Base.Markdown.MD
+@rewire Escher.Tile # Base.Markdown.MD

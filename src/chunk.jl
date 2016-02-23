@@ -128,13 +128,13 @@ function newchunk(parentChunk, name, style=nothing)
 end
 
 function addtochunk(t)
-    # println("addtochunk $t ($(typeof(t)))")
-    # Base.show_backtrace(STDOUT, backtrace())
-    # println()
+    println("addtochunk $t ($(typeof(t)))")
+    Base.show_backtrace(STDOUT, backtrace())
+    println()
 
     currentChunk==nothing && error("No active session yet")
 
-    push!(currentChunk.children, t)
+    push!(currentChunk.children, deepcopy(t))
     notify(currentSession.updated)
     nothing
 end

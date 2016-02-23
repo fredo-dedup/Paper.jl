@@ -73,17 +73,24 @@ end
 
 ##### builds the Escher page structure  ######
 
+dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |>
+                    borderstyle(dashed)
+italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
+
 function build(chunk::Chunk, parentname::AbstractString)
     # session = p.sessions[:abcd]
-    dashedborder(t)  = t |> borderwidth(1px) |> bordercolor("#aaa") |>
-                        borderstyle(dashed)
-    italicmessage(t) = t |> fontcolor("#aaa") |> fontstyle(italic)
+    # if parentname==""
+    #     println("build :")
+    #     Base.show_backtrace(STDOUT, backtrace())
+    #     println()
+    # end
+    parentname=="" && println("build")
 
     currentname = parentname=="" ?  string(chunk.name) :
                     parentname * "." * string(chunk.name)
     try
         nbel = length(chunk.children)
-        # println("build, nbel = $nbel")
+        println("build, nbel = $nbel, current $(chunk==currentChunk)")
         if nbel==0
           ret = title(1, currentname) |> italicmessage
         else

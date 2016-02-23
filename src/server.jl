@@ -17,7 +17,8 @@ function uisocket(req)
     h = @compat parse(Int, d["h"])
 
     sock = req[:socket]
-    tilestream = Input{Signal}(Input{Tile}(empty))
+    # tilestream = Input{Signal}(Input{Tile}(empty))
+    tilestream = Signal(Signal, Signal(Tile, empty))
 
     # TODO: Initialize window with session,
     # window dimensions and what not
@@ -29,8 +30,8 @@ function uisocket(req)
     # write(sock, JSON.json(import_cmd("tex")))
     # write(sock, JSON.json(import_cmd("widgets")))
 
-    lift(asset -> write(sock, JSON.json(import_cmd(asset))),
-         window.assets)
+    map(asset -> write(sock, JSON.json(import_cmd(asset))),
+        window.assets)
 
     newstream = build(session)
     swap!(tilestream, newstream)
@@ -53,7 +54,8 @@ function uisocket(req)
     end
 
     while isopen(sock)
-        wait(session.updated)
+        # wait(session.updated)
+        wait(real_update)
         newstream = build(session)
         try
             swap!(tilestream, newstream)
@@ -62,6 +64,8 @@ function uisocket(req)
         end
     end
 end
+
+real_update = Condition()
 
 ### initializes the server
 function init(port_hint=5555)

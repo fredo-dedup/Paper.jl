@@ -48,5 +48,5 @@ macro rewire(args...)
 end
 
 
-@rewire Base.Markdown.MD Tile Escher.TileList
-# @rewire AbstractString Number
+# @rewire Base.Markdown.MD
+@rewire Tile Escher.TileList
