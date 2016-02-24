@@ -4,11 +4,11 @@ using Paper
 import PyPlot
 PyPlot.pygui(false)  # do not use Python window, display in browser instead
 PyPlot.plt[:ioff]()  # to avoid bug appearing when is-interactive = true
-# PyPlot.plt[:ion]()  # to avoid bug appearing when is-interactive = true
 PyPlot.svg(true)     # SVG graphs are cleaner
 
 @rewire PyPlot.Figure  # direct PyPlot figures to browser
 
+#-------- fit the GP ----------------------------------
 ts = rand(10)
 ys = Float64[ rand()*0.1 + cos(x) for x in ts]
 
@@ -18,7 +18,7 @@ kern = Mat(1/2, -1., -2.)
   gp2 = GP(ts, ys, MeanConst(mean(ys)), kern)
   # optimize!(gp)
 
-#------- affichage ------------------------------------
+#------- plot ------------------------------------
 
 @session GP2 vbox pad(2em)
 @loadasset "tex"
@@ -27,29 +27,32 @@ kern = Mat(1/2, -1., -2.)
   title(2, "Gaussian Process") |> fontcolor("#000")
   title(1, "for testing purposes") |> fontstyle(italic)
 
-Paper.notify(Paper.real_update)
+# Paper.notify(Paper.real_update)
 
 @newchunk center columns(2, 10px) vbox
 
 plaintext("points et modèle:")
+
 xs = collect(linspace(0., 1., 300))
 μ, σ = predict(gp, xs)
 ci = 1.96 * sqrt(σ)
-
-PyPlot.figure()  # reset plotting area
-PyPlot.fill_between(xs, μ-ci, μ+ci, facecolor="gray", alpha=0.3)
-PyPlot.plot(xs, μ, "k-")
-PyPlot.plot(ts, ys, "*")
-PyPlot.gcf()
+begin
+  PyPlot.figure()  # reset plotting area
+  PyPlot.fill_between(xs, μ-ci, μ+ci, facecolor="gray", alpha=0.3)
+  PyPlot.plot(xs, μ, "k-")
+  PyPlot.plot(ts, ys, "*")
+  PyPlot.gcf()
+end
 
 μ2, σ2 = predict(gp2, xs)
 ci2 = 1.96 * sqrt(σ2)
-PyPlot.figure()  # reset plotting area
-PyPlot.fill_between(xs, μ2-ci2, μ2+ci2, facecolor="lightblue", alpha=0.3)
-PyPlot.plot(xs, μ2, "b-")
-PyPlot.plot(ts, ys, "*")
-PyPlot.gcf()
-
+begin
+  PyPlot.figure()  # reset plotting area
+  PyPlot.fill_between(xs, μ2-ci2, μ2+ci2, facecolor="lightblue", alpha=0.3)
+  PyPlot.plot(xs, μ2, "b-")
+  PyPlot.plot(ts, ys, "*")
+  PyPlot.gcf()
+end
 
 
 @newchunk center2 vbox

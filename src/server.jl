@@ -17,11 +17,7 @@ function uisocket(req)
     h = @compat parse(Int, d["h"])
 
     sock = req[:socket]
-    # tilestream = Input{Signal}(Input{Tile}(empty))
     tilestream = Signal(Signal, Signal(Tile, empty))
-
-    # TODO: Initialize window with session,
-    # window dimensions and what not
 
     window = Window(dimension=(w*px, h*px))
     session.window = window
@@ -30,8 +26,8 @@ function uisocket(req)
     # write(sock, JSON.json(import_cmd("tex")))
     # write(sock, JSON.json(import_cmd("widgets")))
 
-    map(asset -> write(sock, JSON.json(import_cmd(asset))),
-        window.assets)
+    foreach(asset -> write(sock, JSON.json(import_cmd(asset))),
+         window.assets)
 
     newstream = build(session)
     swap!(tilestream, newstream)
@@ -39,7 +35,7 @@ function uisocket(req)
     start_updates(flatten(tilestream, typ=Any), window, sock, "root")
 
     # client commands processing ?
-    @async while isopen(sock)
+    t = @async while isopen(sock)
         try
             data = read(sock)
             msg = JSON.parse(bytestring(data))
@@ -54,8 +50,7 @@ function uisocket(req)
     end
 
     while isopen(sock)
-        # wait(session.updated)
-        wait(real_update)
+        wait(session.updated)
         newstream = build(session)
         try
             swap!(tilestream, newstream)
@@ -63,9 +58,10 @@ function uisocket(req)
             error("\nError while updating, closing session $sn")
         end
     end
+    wait(t)
 end
 
-real_update = Condition()
+# real_update = Condition()
 
 ### initializes the server
 function init(port_hint=5555)

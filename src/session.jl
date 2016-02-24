@@ -90,7 +90,7 @@ function build(chunk::Chunk, parentname::AbstractString)
                     parentname * "." * string(chunk.name)
     try
         nbel = length(chunk.children)
-        println("build, nbel = $nbel, current $(chunk==currentChunk)")
+        # println("build, nbel = $nbel, current $(chunk==currentChunk)")
         if nbel==0
           ret = title(1, currentname) |> italicmessage
         else

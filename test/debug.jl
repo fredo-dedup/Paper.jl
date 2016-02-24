@@ -4,7 +4,8 @@ module A ; end
 
 
 ######################################################################
-
+module A
+using Paper
 reload("Media")
 reload("Paper")
 import Paper
@@ -12,10 +13,27 @@ import Paper
 PREFIX = Pkg.dir("Paper")
 
 Paper.@rewire PyPlot.Figure  # direct PyPlot figures to browser
-
+isrewired(PyPlot.Figure)
 
 Paper.compile(joinpath(PREFIX, "examples", "gaussian-process.jl"))
+Paper.compile(joinpath(PREFIX, "examples", "vega.jl"))
+
+end
+
+
+notify(Paper.currentSession.updated)
+sess = Paper.currentSession
+length(sess.rootchunk.children)
+fieldnames(sess)
+dump(sess.rootchunk.children[2].children[1])
+sess.rootchunk.name
+sess.rootchunk
+
+Paper.compile(joinpath(PREFIX, "examples", "vega.jl"))
 Paper.notify(Paper.real_update)
+
+
+sess.rootchunk.children[2].children[1]
 
 
 module A
@@ -32,6 +50,80 @@ Paper.notify(Paper.real_update)
 @newchunk center2 columns(2, 10px) vbox
 
 end
+
+
+#########################################################################
+module A; end
+
+module A
+using Paper
+using Vega
+
+x = [95, 86.5, 80.8, 80.4, 80.3, 78.4, 74.2, 73.5, 71, 69.2, 68.6, 65.5, 65.4, 63.4, 64]
+y = [95, 102.9, 91.5, 102.5, 86.1, 70.1, 68.5, 83.1, 93.2, 57.6, 20, 126.4, 50.8, 51.8, 82.9]
+cont = ["EU", "EU", "EU", "EU", "EU", "EU", "EU", "NO", "EU", "EU", "RU", "US", "EU", "EU", "NZ"]
+z = [13.8, 14.7, 15.8, 12, 11.8, 16.6, 14.5, 10, 24.7, 10.4, 16, 35.3, 28.5, 15.4, 31.3]
+
+@session Vega
+@loadasset "tex"
+@loadasset "texttqsd"
+@loadasset "widgets"
+
+push!(Paper.currentSession.window.assets, "tex")
+
+@newchunk textex
+tex("\\Sigma^{N}_{i=1}")
+plaintext("active ?")
+
+@loadasset(("Vega", "vega-plot"))
+
+vv = Paper.currentSession.window
+push!(vv.assets, ("Vega", "vega-plot"))
+
+methods(Paper.render, (Vega.VegaVisualization, Any))
+@newchunk vvv
+Paper.notify(Paper.real_update)
+
+@rewire Vega.VegaVisualization
+isrewired(VegaVisualization)
+
+v = bubblechart(x = x, y = y, group = cont, pointSize = z)
+typeof(v)
+Vega.tojson(v)
+v
+
+bubblechart(x = x, y = y, group = cont, pointSize = z) |>
+  xlim!(min = 60, max = 100) |>
+  ylim!(min = 10, max = 160)
+
+methods(xlim!)
+plaintext("abcd")
+
+#Chart mods
+v.width = 600
+v.height = 300
+Vega.xlim!(v, min = 60, max = 100)
+Vega.ylim!(v, min = 10, max = 160)
+Vega.title!(v, title = "Sugar and Fat Intake Per Country")
+Vega.ylab!(v, title = "Daily Sugar Intake", grid = true)
+Vega.xlab!(v, title = "Daily Fat Intake", grid = true)
+Vega.hline!(v, value = 50, strokeDash = 5, stroke = "gray")
+Vega.vline!(v, value = 65, strokeDash = 5, stroke = "gray")
+Vega.hover!(v, opacity = 0.5)
+
+v |> v->hover!(v,opacity=0.2)
+
+
+end
+
+
+
+
+
+
+
+
+
 
 
 #########################################################################

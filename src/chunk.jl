@@ -19,6 +19,11 @@ Chunk(n::Symbol, st::Function) =
 const δindent = 2
 
 function show(io::IO, c::Chunk; indent=0)
+  if c.name== :root
+      println("show chunk :")
+      Base.show_backtrace(STDOUT, backtrace())
+      println()
+  end
    spad = " " ^ indent
    println(io, spad, "'$(c.name)' ($(length(c.children)) elements) : ")
    for e in c.children
