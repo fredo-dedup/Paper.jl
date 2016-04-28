@@ -26,7 +26,7 @@ function uisocket(req)
     # write(sock, JSON.json(import_cmd("tex")))
     # write(sock, JSON.json(import_cmd("widgets")))
 
-    foreach(asset -> write(sock, JSON.json(import_cmd(asset))),
+    Reactive.foreach(asset -> write(sock, JSON.json(import_cmd(asset))),
          window.assets)
 
     newstream = build(session)

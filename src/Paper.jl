@@ -22,7 +22,7 @@ __precompile__(false)
 
 module Paper
 
-    using Compat
+    import Compat.@compat
     using Reexport
 
     using Requires

@@ -1,5 +1,5 @@
-
-module Redisplay # to separate the render of Escher from the one of Media
+# submodule here to segregate the 'render()' of Escher from the one of Media
+module Redisplay
 
     using Media, Atom
     import Media: render
@@ -17,7 +17,8 @@ module Redisplay # to separate the render of Escher from the one of Media
             string(typeof(x))
           end
 
-      # @eval render(::Atom.Editor, x::$t) = (println("there") ; render(md, x))
+      @eval render(::Atom.Editor, x::$t)  = nothing
+      # @eval render(::Atom.Console, x::$t) = nothing
 
     end
 

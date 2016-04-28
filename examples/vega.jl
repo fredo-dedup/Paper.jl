@@ -11,12 +11,13 @@ z = [13.8, 14.7, 15.8, 12, 11.8, 16.6, 14.5, 10, 24.7, 10.4, 16, 35.3, 28.5, 15.
 # @loadasset(("Vega", "vega-plot"))
 @rewire Vega.VegaVisualization
 
+sleep(3.0)
 vv = Paper.currentSession.window
 push!(vv.assets, ("Vega", "vega-plot"))
 
 @newchunk header vbox packacross(center) fillcolor("#ddd") pad(2em)
-  title(2, "Vega charts") |> fontcolor("#000")
-  title(1, "bubblechart()") |> fontstyle(italic)
+title(2, "Vega charts") |> fontcolor("#000")
+title(1, "bubblechart()") |> fontstyle(italic)
 
 @newchunk plot vbox pad(1em)
 vskip(1em)

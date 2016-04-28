@@ -1,24 +1,136 @@
 module A ; end
+reload("VegaLite")
+reload("Paper")
 
-α  ✪  β
+################# testing Vega branch  #####################
 
+module A
+using VegaLite
+buttons(false)
+buttons(true)
+using Paper
+
+@session Vega
+@rewire VegaLiteVis
+
+@newchunk header
+title(2,"Pie charts")
+
+vv = Paper.currentSession.window
+push!(vv.assets, ("VegaLite", "vega-lite"))
+
+@newchunk center
+
+N = 10
+  props = rand(N)
+  as = 2π * cumsum(props) / sum(props)
+  push!(as, as[1])
+
+N₂ = 1
+  xs = Array(Float64, 4, N₂)
+  ys = Array(Float64, 4, N₂)
+
+inner, outer = 10., 20.
+  ϵ = 2π * 0.02
+  for i in 1:N₂
+   xs[:,i] = [sin(as[i]   + ϵ)*inner, sin(as[i]   + ϵ)*outer,
+              sin(as[i+1] - ϵ)*outer, sin(as[i+1] - ϵ)*inner ]
+   ys[:,i] = [cos(as[i]   + ϵ)*inner, cos(as[i]   + ϵ)*outer,
+              cos(as[i+1] - ϵ)*outer, cos(as[i+1] - ϵ)*inner ]
+  end
+
+vskip(1em)
+
+v = data_values(x=vec(xs), y=vec(ys),
+                group=repeat([1:N₂;],inner=[4]),
+                order=[1:4N₂;] ) +
+    mark_line() +
+    encoding_x_quant(:x) + encoding_y_quant(:y) +
+    encoding_color_ord(:group) +
+    encoding_path_ord(:order) +
+    encoding_detail_nominal(:group)
+
+buttons(false)
+buttons(true)
+svg(false)
+svg(true)
+
+using RDatasets
+
+mpg = dataset("ggplot2", "mpg")
+
+@rewire DataFrame
+
+head(mpg)
+
+
+
+@newchunk center
+@newchunk center2 hbox
+
+  data_values(mpg) +
+  mark_text() +
+  encoding_column_ord(:Year) +
+  encoding_row_ord(:Manufacturer) +
+  encoding_color_nominal(:Manufacturer) +
+  encoding_text_quant(:Displ, aggregate="mean") +
+  config_mark(fontSize=12, format="3.2f", font="courier")
+
+data_values(mpg) +
+  mark_bar() +
+  encoding_column_ord(:Year) +
+  encoding_y_ord(:Manufacturer) +
+  encoding_color_nominal(:Manufacturer) +
+  encoding_x_quant(:Displ, aggregate="mean",
+                   scale=scale(clamp=true, zero=false))
+
+
+xs = [0:0.1:2.]
+ys  = map(sin, xs)
+ys2 = map(sin, xs+1.3)
+δ = 0.1
+
+lineplot(x=xs, y=ys)
+v = ribbonplot(x=xs, ylow=ys-δ, yhigh=ys+δ)
+
+v = ribbonplot(x=[xs,xs+0.2], ylow=[ys,ys2]-δ, yhigh=[ys,ys2]+δ,
+           group=repeat([:A, :B],inner=[length(xs);]))
+
+import JSON
+show(JSON.json(tojs(v)))
+
+areaplot(x=[xs,xs], y=[ys,ys2]+δ,
+         group=repeat([:A, :B],inner=[length(xs);]))
+
+lineplot(x=[xs,xs], y=[ys,ys2]+δ,
+        group=repeat([:A, :B],inner=[length(xs);]))
+
+
+layer(lineplot(x=xs, y=ys-2δ),
+      ribbonplot(x=xs, ylow=ys-δ, yhigh=ys+δ))
+
+end
 
 ######################################################################
 module A
+reload("Paper")
 using Paper
 reload("Media")
-reload("Paper")
-import Paper
 
 PREFIX = Pkg.dir("Paper")
 
-Paper.@rewire PyPlot.Figure  # direct PyPlot figures to browser
-isrewired(PyPlot.Figure)
+# Paper.@rewire PyPlot.Figure  # direct PyPlot figures to browser
+# isrewired(PyPlot.Figure)
 
 Paper.compile(joinpath(PREFIX, "examples", "gaussian-process.jl"))
 Paper.compile(joinpath(PREFIX, "examples", "vega.jl"))
+Paper.compile(joinpath(PREFIX, "examples", "GP.jl"))
 
 end
+
+
+
+
 
 
 notify(Paper.currentSession.updated)
@@ -42,8 +154,11 @@ using Paper
 @loadasset "tex"
 
 @newchunk header vbox packacross(center) fillcolor("#ddd")
-  title(2, "Gaussian Process") |> fontcolor("#000")
-  title(1, "for testing purposes") |> fontstyle(italic)
+title(2, "Gaussian Process") |> fontcolor("#000")
+title(1, "for testing purposes") |> fontstyle(italic)
+
+@newchunk center hbox wrap
+container(100px,100px) |> fillcolor("#d88")
 
 Paper.notify(Paper.real_update)
 

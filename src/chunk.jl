@@ -133,24 +133,44 @@ function newchunk(parentChunk, name, style=nothing)
 end
 
 function addtochunk(t)
-    println("addtochunk $t ($(typeof(t)))")
-    Base.show_backtrace(STDOUT, backtrace())
-    println()
+    # println("addtochunk ($(typeof(t)))")
+    # Base.show_backtrace(STDOUT, backtrace())
+    # println()
 
-    currentChunk==nothing && error("No active session yet")
+    currentChunk==nothing && error("No active chunk yet")
 
-    push!(currentChunk.children, deepcopy(t))
+    # push!(currentChunk.children, deepcopy(t))
+    push!(currentChunk.children, t)
     notify(currentSession.updated)
     nothing
 end
 
+# function stationary(f::Function, signals::Signal...)
+#     st = lift(f, signals...)
+#     addtochunk(empty)
+#     cc = currentChunk
+#     slot = length(currentChunk.children)
+#     lift(st) do nt
+#         cc.children[slot] = nt
+#         notify(currentSession.updated)
+#     end
+# end
+
 function stationary(f::Function, signals::Signal...)
-    st = lift(f, signals...)
-    addtochunk(empty)
-    cc = currentChunk
-    slot = length(currentChunk.children)
-    lift(st) do nt
+    local cc = currentChunk
+    cc==nothing && error("No active chunk yet")
+
+    local cs = currentSession
+
+    println("stat 1 $(typeof(signals))  qsddqs")
+    local st = Reactive.foreach(f, merge(signals...))
+
+    push!(cc.children, empty)
+    # addtochunk(empty)
+    local slot = length(cc.children)
+    Reactive.foreach(st) do nt
+        println("stat 2 ")
         cc.children[slot] = nt
-        notify(currentSession.updated)
+        notify(cs.updated)
     end
 end
